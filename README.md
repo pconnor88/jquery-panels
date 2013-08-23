@@ -7,7 +7,7 @@ jQuery panels can be setup by including jQuery and the jQuery.panels javascript 
 $('#element').panels(panel: '.slideclass');
 ```
 
-The HMTL structure should be as follows:
+The HMTL structure should be as follows, where slideclass is each individual panel:
 ```html
 <div id="element">
 	<div class="slideclass">
