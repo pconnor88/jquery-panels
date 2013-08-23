@@ -177,7 +177,7 @@
 							var listing = $(this).parent("li");	
 							var newIndex = $(plugin.element).children(".pnl-markers").children("li").index(listing);
 							
-							plugin.currentPosition = plugin.movePanel(plugin.element, plugin.options, 0, true, newIndex);
+							plugin.currentPosition = plugin.movePanel(plugin.element, plugin.options, 1, true, newIndex);
 							return false;
 							
 						});
@@ -264,7 +264,7 @@
 					if(nextSlide >= this.elements) {
 						nextSlide = 0;	
 					}
-					
+										
 					//Only show some animation if trying to access a different slide
 					if(nextSlide != this.currentPosition) {
 						
@@ -333,6 +333,7 @@
 										}
 									}
 									
+									
 									if(options.vertical) {
 										
 										$(el).find(".scroller").animate({
@@ -355,13 +356,13 @@
 							}
 							
 						}
-						
+												
 						// Update the active marker if markers are shown.
 						if(options.showMarkers) {
-							$(el).children(options.markerHolderClass).children("li").children("a").removeClass(options.markerActiveClass);
-							$(el).children(options.markerHolderClass).children("li:eq(" + nextSlide + ")").children("a").addClass(options.markerActiveClass);					
+							$(el).children(".pnl-markers").children("li").removeClass("active");
+							$(el).children(".pnl-markers").children("li:eq(" + nextSlide + ")").addClass("active");					
 						}
-						
+												
 					}
 					
 					//Setup timers again if permission to do so
