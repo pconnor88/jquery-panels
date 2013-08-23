@@ -72,8 +72,7 @@
 			}
 			
 			$(this.element).css({
-				"position": "relative",
-				"overflow": "hidden"
+				"position": "relative"
 			});
 			
 			switch(this.options.animation)
