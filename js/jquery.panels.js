@@ -253,13 +253,22 @@
 						this.options.markerHolderClass = "." + this.options.markerHolderClass;
 						$(this.element).children(".pnl-markers").children("li:eq(" + this.currentPosition + ")").addClass("active");
 						
+						var plugin = this;
+						
 						//Setup listeners
 						$(this.element).children(".pnl-markers").children("li").children("a").click(function() {
 							
 							var listing = $(this).parent("li");	
 							var newIndex = $(plugin.element).children(".pnl-markers").children("li").index(listing);
 							
-							plugin.currentPosition = plugin.movePanel(plugin.element, plugin.options, 1, true, newIndex);
+							var moveDirection = 1;
+							
+							if(newIndex < plugin.currentPosition) 
+							{
+								moveDirection = -1;
+							}
+														
+							plugin.currentPosition = plugin.movePanel(plugin.element, plugin.options, moveDirection, true, newIndex);
 							return false;
 							
 						});
