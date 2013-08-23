@@ -23,6 +23,7 @@
 			showMarkers: false,
 			markerHolderClass: '',
 			markerClass: '',
+			morkerPosition: 'sw',
 			showMarkerNumbers: false,
 			onSetupComplete: function(element, slide) { },
 			onSlideChange: function(element, slide) { }
@@ -87,12 +88,20 @@
 						$(this.element).find(this.options.panel).css({
 							position: 'relative'
 						});
+						$(this.element).css({
+							"height": (this.panelHeight * this.options.panelsPerScreen),
+							"width": this.panelWidth
+						});
 					} else {
 						$(this.element).children(this.options.panel).wrapAll("<div class=\"mask\" style=\"position:relative; overflow:hidden; width: " + (this.panelWidth * this.options.panelsPerScreen) + "px; height: " + this.panelHeight + "px;\"><div class=\"scroller\" style=\"position:absolute; zoom:1; width: " + ((this.panelWidth*this.elements)+20) + "px; height: " + this.panelHeight + "px;\"></div></div>");
 						$(this.element).find(".scroller").css("left", (this.panelWidth*this.currentPosition*-1) + "px");
 						$(this.element).find(this.options.panel).css({
 							position: 'relative',
 							float: 'left'
+						});
+						$(this.element).css({
+							"width": (this.panelWidth * this.options.panelsPerScreen),
+							"height": this.panelHeight
 						});
 					}
 					
@@ -151,10 +160,10 @@
 					
 					if (this.elements > 1) {
 		
-						var ButtonHTML = "<ul class=\"pnl-markers" + this.options.markerHolderClass + "\">";
+						var ButtonHTML = "<ul class=\"pnl-markers" + this.options.markerHolderClass + "\" style=\"padding:0px; list-style:none;\">";
 						
 						for(i = 0; i < this.elements; i++) {
-							ButtonHTML += "<li><a href=\"#\" class=\"" + this.options.markerClass + "\">";
+							ButtonHTML += "<li style=\"float:left\"><a href=\"#\" class=\"" + this.options.markerClass + "\">";
 							
 							if(this.options.showMarkerNumbers) {
 								ButtonHTML += (i+1);
@@ -166,6 +175,80 @@
 						ButtonHTML += "</ul>";
 														
 						$(this.element).append(ButtonHTML);
+						
+						var bulletWidth = $(this.element).children(".pnl-markers").children("li").outerWidth(true);
+						var bulletHeight = $(this.element).children(".pnl-markers").children("li").outerHeight(true);
+												
+						switch(this.options.morkerPosition)
+						{
+							case "n":
+								$(this.element).children(".pnl-markers").css({
+									"position": "absolute",
+									"top": "0px",
+									"left": "50%",
+									"marginLeft": ((bulletWidth * this.elements)/2) * -1
+								});
+								break;
+								
+							case "ne":
+								$(this.element).children(".pnl-markers").css({
+									"position": "absolute",
+									"top": "0px",
+									"right": "0px"
+								});
+								break;
+								
+							case "e":
+								$(this.element).children(".pnl-markers").css({
+									"position": "absolute",
+									"right": "0px",
+									"top": "50%",
+									"marginTop": (bulletHeight/2) * -1
+								});
+								break;
+								
+							case "se":
+								$(this.element).children(".pnl-markers").css({
+									"position": "absolute",
+									"bottom": "0px",
+									"right": "0px"
+								});
+								break;
+								
+							case "s":
+								$(this.element).children(".pnl-markers").css({
+									"position": "absolute",
+									"bottom": "0px",
+									"left": "50%",
+									"marginLeft": ((bulletWidth * this.elements)/2) * -1
+								});
+								break;
+								
+							case "w":
+								$(this.element).children(".pnl-markers").css({
+									"position": "absolute",
+									"left": "0px",
+									"top": "50%",
+									"marginTop": (bulletHeight/2) * -1
+								});
+								break;
+								
+							case "nw":
+								$(this.element).children(".pnl-markers").css({
+									"position": "absolute",
+									"top": "0px",
+									"left": "0px"
+								});
+								break;
+							
+							default:
+								$(this.element).children(".pnl-markers").css({
+									"position": "absolute",
+									"bottom": "0px",
+									"left": "0px"
+								});
+								
+						} 
 						
 						this.options.markerHolderClass = "." + this.options.markerHolderClass;
 						$(this.element).children(".pnl-markers").children("li:eq(" + this.currentPosition + ")").addClass("active");
