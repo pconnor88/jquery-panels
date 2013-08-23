@@ -23,7 +23,7 @@
 			showMarkers: false,
 			markerHolderClass: '',
 			markerClass: '',
-			morkerPosition: 'sw',
+			markerPosition: 'sw',
 			showMarkerNumbers: false,
 			onSetupComplete: function(element, slide) { },
 			onSlideChange: function(element, slide) { }
@@ -179,7 +179,7 @@
 						var bulletWidth = $(this.element).children(".pnl-markers").children("li").outerWidth(true);
 						var bulletHeight = $(this.element).children(".pnl-markers").children("li").outerHeight(true);
 												
-						switch(this.options.morkerPosition)
+						switch(this.options.markerPosition)
 						{
 							case "n":
 								$(this.element).children(".pnl-markers").css({
