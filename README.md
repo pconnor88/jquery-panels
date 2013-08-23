@@ -10,9 +10,9 @@ $('#element').panels(panel: '.slideclass');
 The HMTL structure should be as follows:
 ```html
 <div id="element">
-	<div class="slideclass">
-        </div>
-        <div class="slideclass">
-        </div>
+<div class="slideclass">
+</div>
+<div class="slideclass">
+</div>
 </div>
 ```
