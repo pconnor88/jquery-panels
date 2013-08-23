@@ -463,7 +463,11 @@
 				
 				if(options.infinite) 
 				{
-					options.onSlideChange(this, $(el).find(options.panel + ":eq(0)"));	
+					if(direction == 1) {
+						options.onSlideChange(this, $(el).find(options.panel + ":eq(1)"));	
+					} else {
+						options.onSlideChange(this, $(el).find(options.panel + ":eq(0)"));	
+					}
 				} 
 				else 
 				{
@@ -518,6 +522,15 @@
 		previous: function() {
 		
 			plugin.currentPosition = plugin.movePanel(plugin.element, plugin.options, -1, true, -1);
+						
+		},
+		
+		destroy: function() {
+			
+			var plugin = this;
+			clearInterval(plugin.timerval);
+			this.options = null;
+			plugin = null;
 						
 		},
 		
