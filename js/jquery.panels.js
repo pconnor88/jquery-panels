@@ -40,6 +40,22 @@
         this._name = pluginName;
 		
 		this.elements = $(this.element).find(this.options.panel).size();
+		
+		///Recalculate number of elements based on perScreen and step settings
+		
+		var elementsTemp = 0;
+		for(var i=0; i<this.elements; i+= this.options.panelsToMove) {
+			if((i + this.options.panelsPerScreen) < this.elements) {
+				elementsTemp++;
+			}
+		}
+		
+		//if((this.elements % this.options.panelsPerScreen) != 0) {
+			elementsTemp++;
+		//}
+		
+		this.moveElements = elementsTemp;
+		
 		this.panelWidth = $(this.element).find(this.options.panel).outerWidth(true);
 		this.panelHeight = $(this.element).find(this.options.panel).outerHeight(true);
 		
@@ -127,10 +143,14 @@
 					
 			}
 			
+			
+			
+			
+			
 			if(this.options.showArrows) {
 				
 				// Only add arrows if there is more than 1 slide
-				if(this.elements > 1) {
+				if(this.moveElements > 1) {
 			
 					// Inject the arrows
 					var arrowHTMLImageLeft = "";
@@ -158,11 +178,11 @@
 			
 			if(this.options.showMarkers) {
 					
-					if (this.elements > 1) {
+					if (this.moveElements > 1) {
 		
 						var ButtonHTML = "<ul class=\"pnl-markers" + this.options.markerHolderClass + "\" style=\"padding:0px; list-style:none;\">";
 						
-						for(i = 0; i < this.elements; i++) {
+						for(i = 0; i < this.moveElements; i++) {
 							ButtonHTML += "<li style=\"float:left\"><a href=\"#\" class=\"" + this.options.markerClass + "\">";
 							
 							if(this.options.showMarkerNumbers) {
@@ -186,7 +206,7 @@
 									"position": "absolute",
 									"top": "0px",
 									"left": "50%",
-									"marginLeft": ((bulletWidth * this.elements)/2) * -1
+									"marginLeft": ((bulletWidth * this.moveElements)/2) * -1
 								});
 								break;
 								
@@ -220,7 +240,7 @@
 									"position": "absolute",
 									"bottom": "0px",
 									"left": "50%",
-									"marginLeft": ((bulletWidth * this.elements)/2) * -1
+									"marginLeft": ((bulletWidth * this.moveElements)/2) * -1
 								});
 								break;
 								
@@ -349,10 +369,10 @@
 					
 					// Check to make sure the next panel isnt out of range..
 					if(nextSlide < 0) {
-						nextSlide = this.elements-1;	
+						nextSlide = this.moveElements-1;	
 					}
 					
-					if(nextSlide >= this.elements) {
+					if(nextSlide >= this.moveElements) {
 						nextSlide = 0;	
 					}
 										
@@ -417,24 +437,31 @@
 								case "slide":
 									
 									var scrollToSlide = nextSlide;
-	
-									if(options.panelsPerScreen > 1) {
-										if((nextSlide + (options.panelsPerScreen-1)) >= this.elements) {
-											scrollToSlide = this.elements - options.panelsPerScreen;
+									if(((scrollToSlide * this.options.panelsToMove) + this.options.panelsPerScreen) >= (this.elements)) {
+																				
+										if(options.vertical) {
+											$(el).find(".scroller").animate({
+												top: ((this.elements - this.options.panelsPerScreen) * this.panelHeight) * -1
+											});
+										} else {
+											$(el).find(".scroller").animate({
+												left: ((this.elements - this.options.panelsPerScreen) * this.panelWidth) * -1
+											});
+										}
+										 
+									} else {
+										if(options.vertical) {
+											$(el).find(".scroller").animate({
+												top: (scrollToSlide * (this.panelHeight * this.options.panelsToMove)) * -1
+											});
+										} else {
+											$(el).find(".scroller").animate({
+												left: (scrollToSlide * (this.panelWidth * this.options.panelsToMove)) * -1
+											});
 										}
 									}
 									
 									
-									if(options.vertical) {
-										
-										$(el).find(".scroller").animate({
-											top: (scrollToSlide * this.panelHeight) * -1
-										});
-									} else {
-										$(el).find(".scroller").animate({
-											left: (scrollToSlide * this.panelWidth) * -1
-										});
-									}
 									
 									break;
 								
