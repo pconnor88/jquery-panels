@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>jQuery Panels - Basic Use</title>
+      	<style type="text/css">
+			.slide {width:250px; height:300px;}
+			.pnl-markers {margin:0px}
+			.pnl-markers li {list-style:none; float:left; margin:0px 2px;}
+			.pnl-markers li a {display:block; width:10px; height:10px; border-radius:10px; border:2px solid #474e5d;}
+			.pnl-markers li.active a {background:#474e5d;}
+		</style>
+        <script type="text/javascript" src="../js/jquery-1.7.1.min.js"></script>
+        <script type="text/javascript" src="../js/jquery.panels.js"></script>
+        <script type="text/javascript">
+			$(function() {
+				$("#ticker").panels({
+					panel: '.slide',
+					animation: 'slide',
+					panelsPerScreen: 3,
+					panelsToMove: 3,
+					wait: 3000,
+					showMarkers: true,
+					markerHolderClass: '',
+					markerClass: '',
+					markerPosition: 's'
+				});
+			});
+		</script>
+    </head>
+    <body>
+    	<div id="ticker">
+            <img src="../images/macbook.jpg" alt="Image1" class="slide">
+            <img src="../images/ipad.jpg" alt="Image3" class="slide">
+            <img src="../images/ipad-mini.jpg" alt="Image4" class="slide">
+            <img src="../images/imac.jpg" alt="Image2" class="slide">
+            <img src="../images/iphone.jpg" alt="Image5" class="slide">
+        </div>
+    
+    </body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>jQuery Panels - Basic Use</title>
+      	<style type="text/css">
+			.slide {width:800px; height:300px;}
+			.pnl-markers {margin:10px;}
+			.pnl-markers li {list-style:none; float:left; margin:0px 2px;}
+			.pnl-markers li a {display:block; width:10px; height:10px; background:#ecf0f1; border-radius:10px;}
+			.pnl-markers li.active a {background:#f39c12;}
+		</style>
+        <script type="text/javascript" src="../js/jquery-1.7.1.min.js"></script>
+        <script type="text/javascript" src="../js/jquery.panels.js"></script>
+        <script type="text/javascript">
+			$(function() {
+				$("#ticker").panels({
+					panel: '.slide',
+					animation: 'slide',
+					infinite: true,
+					vertical:true,
+					showMarkers: true,
+					markerHolderClass: '',
+					markerClass: '',
+					markerPosition: 'sw'
+				});
+			});
+		</script>
+    </head>
+    <body>
+    	<div id="ticker">
+        	<div class="slide">
+            	<img src="../images/image1.jpg" alt="Image1">
+        	</div>
+            <div class="slide">
+            	<img src="../images/image2.jpg" alt="Image2">
+        	</div>
+            <div class="slide">
+            	<img src="../images/image3.jpg" alt="Image3">
+        	</div>
+            <div class="slide">
+            	<img src="../images/image4.jpg" alt="Image4">
+        	</div>
+            <div class="slide">
+            	<img src="../images/image5.jpg" alt="Image5">
+        	</div>
+        </div>
+    
+    </body>
+</html>
