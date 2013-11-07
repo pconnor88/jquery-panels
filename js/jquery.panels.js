@@ -500,7 +500,7 @@
 				if(options.infinite) 
 				{
 					if(direction == 1) {
-						options.onSlideChange(this, $(el).find(options.panel + ":eq(1)"));	
+						options.onSlideChange(this, $(el).find(options.panel + ":visible").not(".infinite"));	
 					} else {
 						options.onSlideChange(this, $(el).find(options.panel + ":eq(0)"));	
 					}
