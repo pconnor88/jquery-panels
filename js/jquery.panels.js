@@ -379,6 +379,8 @@
 					//Only show some animation if trying to access a different slide
 					if(nextSlide != this.currentPosition) {
 						
+						this.currentPosition = nextSlide;
+						
 						//If Infinite scroll, handle the move function completely differently..
 						if(options.infinite) {
 					
