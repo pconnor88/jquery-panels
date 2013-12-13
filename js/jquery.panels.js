@@ -174,7 +174,7 @@
 						return false;
 					});
 					
-					if(this.options.hideArrowsAtEnd) {
+					if((this.options.hideArrowsAtEnd) && (!this.options.infinite)) {
 																										
 						//Hide the arrow if at the start
 						if(this.currentPosition == 0) {
