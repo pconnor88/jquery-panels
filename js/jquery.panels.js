@@ -16,6 +16,7 @@
 			vertical: false,
 			responsive: false,	
 			showArrows: false,
+			hideArrowsAtEnd: false,
 			leftArrowClass: 'arrowLeft',
 			leftArrowImage: '',
 			rightArrowClass: 'arrowRight',
@@ -172,6 +173,24 @@
 						plugin.currentPosition = plugin.movePanel(plugin.element, plugin.options, 1, true, -1);
 						return false;
 					});
+					
+					if(this.options.hideArrowsAtEnd) {
+																										
+						//Hide the arrow if at the start
+						if(this.currentPosition == 0) {
+							$(this.element).children(".pnl-arrow-left").hide();
+						} else {
+							$(this.element).children(".pnl-arrow-left").show();
+						}
+						
+						//Hide the arrow if at the end
+						if(this.currentPosition == (this.moveElements -1)) {
+							$(this.element).children(".pnl-arrow-right").hide();
+						} else {
+							$(this.element).children(".pnl-arrow-right").show();
+						}
+						
+					}
 					
 				}
 			}
@@ -472,6 +491,24 @@
 									// Fade by default
 									$(el).children(options.panel + ":eq(" + this.currentPosition + ")").fadeOut(options.speed);
 									$(el).children(options.panel + ":eq(" + nextSlide + ")").fadeIn(options.speed);	
+								
+							}
+							
+							if((options.showArrows) && (options.hideArrowsAtEnd)) {
+																										
+								//Hide the arrow if at the start
+								if(this.currentPosition == 0) {
+									$(this.element).children(".pnl-arrow-left").hide();
+								} else {
+									$(this.element).children(".pnl-arrow-left").show();
+								}
+								
+								//Hide the arrow if at the end
+								if(this.currentPosition == (this.moveElements -1)) {
+									$(this.element).children(".pnl-arrow-right").hide();
+								} else {
+									$(this.element).children(".pnl-arrow-right").show();
+								}
 								
 							}
 							
