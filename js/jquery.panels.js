@@ -609,7 +609,7 @@
 						
 		},
 		
-		gotoSlide: function(number) {
+		gotoSlide: function(slideNumber) {
 		
 			if((slideNumber >= this.elements) || (slideNumber < 0)) {
 				slideNumber = 0;	
