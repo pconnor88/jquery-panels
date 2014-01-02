@@ -412,7 +412,7 @@
 						nextSlide = setNextSlide;
 						panelsToMoveThisTime = Math.abs(nextSlide - this.currentPosition);
 					}
-					
+										
 					// Check to make sure the next panel isnt out of range..
 					if(nextSlide < 0) {
 						nextSlide = nextSlide % this.moveElements;
@@ -422,6 +422,7 @@
 					if(nextSlide >= this.moveElements) {
 						nextSlide = nextSlide % this.moveElements;
 					}
+					
 										
 					//Only show some animation if trying to access a different slide
 					if(nextSlide != this.currentPosition) {
@@ -442,7 +443,7 @@
 										for(var s = 0; s < panelsToMoveThisTime; s++) {
 											
 											var sc = this.currentPosition + this.options.panelsPerScreen + s;
-																				
+																															
 											if(sc >= this.elements) {
 												sc = sc % this.elements;	
 											}
@@ -657,12 +658,16 @@
 		
 		next: function() {
 		
-			plugin.currentPosition = plugin.movePanel(plugin.element, plugin.options, 1, false, -1);
+			var plugin = this;
+		
+			plugin.currentPosition = plugin.movePanel(plugin.element, plugin.options, 1, true, -1);
 			
 		},
 		
 		previous: function() {
-		
+			
+			var plugin = this;
+			
 			plugin.currentPosition = plugin.movePanel(plugin.element, plugin.options, -1, true, -1);
 						
 		},
@@ -678,51 +683,17 @@
 		
 		gotoSlide: function(slideNumber) {
 		
-			if((slideNumber >= this.elements) || (slideNumber < 0)) {
-				slideNumber = 0;	
-			}
-						
-			this.currentPosition = slideNumber;
+			var plugin = this;
 			
-			switch(this.options.animation)
+			var moveDirection = 1;
+							
+			if(slideNumber < plugin.currentPosition) 
 			{
-				case "slide":				
-					
-					if(this.options.infinite) {
-						
-						$(this.element).find(this.options.panel + ".infinite").remove();
-						$(this.element).find(this.options.panel).eq(this.currentPosition).clone().insertBefore($(this.element).find(this.options.panel + ":first")).removeClass("hidden").addClass("infinite").show();
-						this.options.onSlideChange(this, $(this.element).find(this.options.panel + ".infinite"));	
-						
-					} else {
-					
-						var scrollToSlide = slideNumber;
-
-						if(this.options.panelsPerScreen > 1) {
-							if((slideNumber + (this.options.panelsPerScreen-1)) >= this.elements) {
-								scrollToSlide = this.elements - this.options.panelsPerScreen;
-							}
-						}
-											
-						if(this.options.vertical) {
-							$(this.element).find(".scroller").css("top", (this.panelHeight*scrollToSlide-1) + "px");
-						} else {
-							$(this.element).find(".scroller").css("left", (this.panelWidth*scrollToSlide*-1) + "px");					
-						}
-						
-						this.options.onSlideChange(this, $(this.element).find(this.options.panel + ":eq(" + this.currentPosition + ")"));
-
-						
-					}
-					break;
-				
-				default:
-					
-					$(this.element).children(this.options.panel + ":not(:eq(" + this.currentPosition + "))").hide();
-						
-					
+				moveDirection = -1;
 			}
-			
+								
+			plugin.currentPosition = plugin.movePanel(plugin.element, plugin.options, moveDirection, true, parseInt(slideNumber));
+									
 		}
 		
     };
