@@ -41,8 +41,9 @@
         this._name = pluginName;
 		
 		this.elements = $(this.element).find(this.options.panel).size();
-		
+			
 		///Recalculate number of elements based on perScreen and step settings
+		
 		
 		var elementsTemp = 0;
 		for(var i=0; i<this.elements; i+= this.options.panelsToMove) {
@@ -56,6 +57,10 @@
 		//}
 		
 		this.moveElements = elementsTemp;
+		
+		if(this.options.infinite) {
+			this.moveElements = this.elements;	
+		}
 		
 		this.panelWidth = $(this.element).find(this.options.panel).outerWidth(true);
 		this.panelHeight = $(this.element).find(this.options.panel).outerHeight(true);
@@ -125,7 +130,27 @@
 					//If infinite then we need to make a custom slider..
 					if(this.options.infinite) {
 						$(this.element).find(this.options.panel).addClass("hidden").hide();
-						$(this.element).find(this.options.panel).eq(this.currentPosition).clone().insertBefore($(this.element).find(this.options.panel + ":first")).removeClass("hidden").addClass("infinite").show();
+						//Create the container, which is what will be sliding.
+						$(this.element).find(this.options.panel).eq(this.currentPosition).clone().width("100%").insertBefore($(this.element).find(this.options.panel + ":first")).removeClass("hidden").addClass("infinite").empty().show();
+						
+						//Load the slider with all the elements needed.
+												
+						for(var s = 0; s < this.options.panelsPerScreen; s++) {
+						
+							var sc = this.options.start + s;
+						
+							if(sc >= this.elements) {
+								sc = sc % this.elements;	
+							}
+						
+							$(this.element).find(".scroller").children(this.options.panel + ":not(.infinite)").eq(sc).clone().removeClass("hidden").show().appendTo($(this.element).find(".infinite"));
+							
+						}
+						
+						$(this.element).find(".scroller").css("left", "0px");
+						
+						
+						
 					}
 									
 					
@@ -368,7 +393,7 @@
         },
 
         movePanel: function(el, options, direction, userClick, setNextSlide) {
-            
+            			
 			// Set the slide to be displayed
 			var nextSlide = this.currentPosition;
 			
@@ -380,83 +405,120 @@
 																							
 				if(options.autoScroll || userClick) {
 					
-					nextSlide += direction;
+					nextSlide += (direction * this.options.panelsToMove);
+					var panelsToMoveThisTime = this.options.panelsToMove;
 									
 					if(setNextSlide > -1) {
 						nextSlide = setNextSlide;
+						panelsToMoveThisTime = Math.abs(nextSlide - this.currentPosition);
 					}
 					
 					// Check to make sure the next panel isnt out of range..
 					if(nextSlide < 0) {
-						nextSlide = this.moveElements-1;	
+						nextSlide = nextSlide % this.moveElements;
+						nextSlide = this.moveElements + nextSlide;
 					}
 					
 					if(nextSlide >= this.moveElements) {
-						nextSlide = 0;	
+						nextSlide = nextSlide % this.moveElements;
 					}
 										
 					//Only show some animation if trying to access a different slide
 					if(nextSlide != this.currentPosition) {
-						
-						this.currentPosition = nextSlide;
-						
-						//If Infinite scroll, handle the move function completely differently..
-						if(options.infinite) {
-					
-							if(direction == 1) {
-								//Add a node after the current slide
-								$(el).find(options.panel + ".hidden:eq(" + nextSlide + ")").clone().insertAfter($(el).find(options.panel + ".infinite")).removeClass("hidden").show();	
+																	
+						//Switch through the animation types and do the necessary animation
+						switch(options.animation)
+						{
+							case "slide":
 								
-								if(options.vertical) {
-									$(el).find(".scroller").animate({
-										top: (this.panelHeight * -1)
-									}, function() {
-										$(el).find(options.panel + ".infinite").next(options.panel).addClass("infinite").prev(options.panel).remove();
-										$(this).css({top:0});
-									});
-								} else {
-									$(el).find(".scroller").animate({
-										left: (this.panelWidth * -1)
-									},function() {
-										$(el).find(options.panel + ".infinite").next(options.panel).addClass("infinite").prev(options.panel).remove();
-										$(this).css({left:0});
-									});
-								}
-														
-							} else {
-								//Add a node before the current slide
-								$(el).find(options.panel + ".hidden:eq(" + nextSlide + ")").clone().insertBefore($(el).find(options.panel + ".infinite")).removeClass("hidden").show();	
 								
-								if(options.vertical) {
-									$(el).find(".scroller").css({
-										top: (this.panelHeight * -1)
-									});
-									$(el).find(".scroller").animate({
-										top: 0
-									}, function() {
-										$(el).find(options.panel + ".infinite").prev(options.panel).addClass("infinite").next(options.panel).remove();
-									});
-								} else {
-									$(el).find(".scroller").css({
-										left: (this.panelWidth * -1)
-									});
-									$(el).find(".scroller").animate({
-										left: 0
-									}, function() {
-										$(el).find(options.panel + ".infinite").prev(options.panel).addClass("infinite").next(options.panel).remove();
-									});
-								}
-								
-							}
+								//If Infinite scroll, handle the move function completely differently..
+								if(options.infinite) {
+							
+									if(direction == 1) {
 																				
-						} else {
-						
+										//Add the number of nodes we are moving after the current slide
 										
-							//Switch through the animation types and do the necessary animation
-							switch(options.animation)
-							{
-								case "slide":
-									
+										for(var s = 0; s < panelsToMoveThisTime; s++) {
+											
+											var sc = this.currentPosition + this.options.panelsPerScreen + s;
+																				
+											if(sc >= this.elements) {
+												sc = sc % this.elements;	
+											}
+																					
+											$(this.element).find(".scroller").children(this.options.panel + ":not(.infinite)").eq(sc).clone().removeClass("hidden").show().appendTo($(this.element).find(".infinite"));
+											
+										}
+																				
+										//$(el).find(options.panel + ".hidden:eq(" + nextSlide + ")").clone().insertAfter($(el).find(options.panel + ".infinite")).removeClass("hidden").show();	
+										
+										if(options.vertical) {
+											$(el).find(".scroller").animate({
+												top: (this.panelHeight  * panelsToMoveThisTime) * -1
+											}, function() {
+												$(el).find(options.panel + ".infinite").children(options.panel + ":lt(" + panelsToMoveThisTime + ")").remove();
+												$(this).css({top:0});
+											});
+										} else {
+											$(el).find(".scroller").animate({
+												left: (this.panelWidth * panelsToMoveThisTime) * -1
+											},function() {
+												$(el).find(options.panel + ".infinite").children(options.panel + ":lt(" + panelsToMoveThisTime + ")").remove();
+												$(this).css({left:0});
+											});
+										}
+																
+									} else {
+										
+										//Add a node before the current slide
+										
+										//Add the number of nodes we are moving after the current slide
+										
+										var sc = this.currentPosition
+										
+										for(var s = 0; s < panelsToMoveThisTime; s++) {
+											
+											sc--;
+																				
+											if(sc < 0) {
+												sc = this.elements-1;	
+											}
+																					
+											$(this.element).find(".scroller").children(this.options.panel + ":not(.infinite)").eq(sc).clone().removeClass("hidden").show().prependTo($(this.element).find(".infinite"));
+											
+										}
+										
+																				
+										//$(el).find(options.panel + ".hidden:eq(" + nextSlide + ")").clone().insertBefore($(el).find(options.panel + ".infinite")).removeClass("hidden").show();	
+										
+										if(options.vertical) {
+											
+											$(el).find(".scroller").css({top:(this.panelHeight  * panelsToMoveThisTime) * -1}).animate({
+												top: 0
+											}, function() {
+												var sl = $(el).find(options.panel + ".infinite").children().size();
+												$(el).find(options.panel + ".infinite").children(options.panel + ":gt(" + (sl-panelsToMoveThisTime -1)  + ")").remove();
+											});
+											
+										} else {
+											
+											$(el).find(".scroller").css({left:(this.panelWidth  * panelsToMoveThisTime) * -1}).animate({
+												left: 0
+											}, function() {
+												var sl = $(el).find(options.panel + ".infinite").children().size();
+												$(el).find(options.panel + ".infinite").children(options.panel + ":gt(" + (sl-panelsToMoveThisTime -1)  + ")").remove();
+											});
+											
+											
+											
+										}
+										
+									}
+																						
+								} else {
+								
+									//Normal Scroll..
 									var scrollToSlide = nextSlide;
 									if(((scrollToSlide * this.options.panelsToMove) + this.options.panelsPerScreen) >= (this.elements)) {
 																				
@@ -482,37 +544,42 @@
 										}
 									}
 									
-									
-									
-									break;
+								}
 								
-								default:
-									
-									// Fade by default
-									$(el).children(options.panel + ":eq(" + this.currentPosition + ")").fadeOut(options.speed);
-									$(el).children(options.panel + ":eq(" + nextSlide + ")").fadeIn(options.speed);	
 								
+								break;
+							
+							default:
+								
+								// Fade by default
+								$(el).children(options.panel + ":eq(" + this.currentPosition + ")").fadeOut(options.speed);
+								$(el).children(options.panel + ":eq(" + nextSlide + ")").fadeIn(options.speed);	
+							
+						}
+						
+						
+						//UPDATE THE CURRENT POSITION TO BE THE NEW POSITION
+						this.currentPosition = nextSlide;
+						
+						if((options.showArrows) && (options.hideArrowsAtEnd)) {
+																									
+							//Hide the arrow if at the start
+							if(this.currentPosition == 0) {
+								$(this.element).children(".pnl-arrow-left").hide();
+							} else {
+								$(this.element).children(".pnl-arrow-left").show();
 							}
 							
-							if((options.showArrows) && (options.hideArrowsAtEnd)) {
-																										
-								//Hide the arrow if at the start
-								if(this.currentPosition == 0) {
-									$(this.element).children(".pnl-arrow-left").hide();
-								} else {
-									$(this.element).children(".pnl-arrow-left").show();
-								}
-								
-								//Hide the arrow if at the end
-								if(this.currentPosition == (this.moveElements -1)) {
-									$(this.element).children(".pnl-arrow-right").hide();
-								} else {
-									$(this.element).children(".pnl-arrow-right").show();
-								}
-								
+							//Hide the arrow if at the end
+							if(this.currentPosition == (this.moveElements -1)) {
+								$(this.element).children(".pnl-arrow-right").hide();
+							} else {
+								$(this.element).children(".pnl-arrow-right").show();
 							}
 							
 						}
+							
+						
 												
 						// Update the active marker if markers are shown.
 						if(options.showMarkers) {
@@ -539,9 +606,9 @@
 				if(options.infinite) 
 				{
 					if(direction == 1) {
-						options.onSlideChange(this, $(el).find(options.panel + ":visible").not(".infinite"));	
+						options.onSlideChange(this, $(el).find(options.panel + ".infinite").children(options.panel + ":eq(" + options.panelsToMove + ")"));	
 					} else {
-						options.onSlideChange(this, $(el).find(options.panel + ":eq(0)"));	
+						options.onSlideChange(this, $(el).find(options.panel + ".infinite").children(options.panel + ":eq(0)"));	
 					}
 				} 
 				else 
@@ -651,7 +718,8 @@
 				
 				default:
 					
-					$(this.element).children(this.options.panel + ":not(:eq(" + this.currentPosition + "))").hide();	
+					$(this.element).children(this.options.panel + ":not(:eq(" + this.currentPosition + "))").hide();
+						
 					
 			}
 			
