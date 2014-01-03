@@ -17,6 +17,32 @@ The HMTL structure should be as follows, where slideclass is each individual pan
 </div>
 ```
 
+animation: 'fade',
+            speed: 2000,
+			wait: 6000,
+			start: 0,
+			resumeOnClick: true,
+			autoScroll: true,
+			infinite: false,
+			panelsPerScreen: 1,
+			panelsToMove: 1,
+			vertical: false,
+			responsive: false,	
+			showArrows: false,
+			hideArrowsAtEnd: false,
+			leftArrowClass: 'arrowLeft',
+			leftArrowImage: '',
+			rightArrowClass: 'arrowRight',
+			rightArrowImage: '',
+			showMarkers: false,
+			markerHolderClass: '',
+			markerClass: '',
+			markerPosition: 'sw',
+			showMarkerNumbers: false,
+			onSetupComplete: function(element, slide) { },
+			onSlideChange: function(element, slide) { }
+
+
 ##Configuration
 The plugin can be configured with any of the following options on setup.
 
@@ -31,48 +57,94 @@ The selector used to identify each slide.
 - **Type:** String
 - **Default:** 'fade'
 
-###speed (string, required)
+###autoScroll
+- **Type:** Boolean
+- **Default:** true
 
-###wait (string, required)
+###hideArrowsAtEnd
+- **Type:** Boolean
+- **Default:** false
 
-###start (string, required)
+###infinite
+- **Type:** Boolean
+- **Default:** true
 
-###resumeOnClick (string, required)
+###leftArrowClass
+- **Type:** String
+- **Default:** 'arrowLeft'
 
-###autoScroll (string, required)
+###leftArrowImage
+- **Type:** String
+- **Default:** ''
 
-###infinite (string, required)
+###markerClass
+- **Type:** String
+- **Default:** ''
 
-###panelsPerScreen (string, required)
+###markerHolderClass
+- **Type:** String
+- **Default:** ''
 
-###panelsToMove (string, required)
+###markerPosition
+- **Type:** String
+- **Default:** 'sw'
 
-###vertical (string, required)
+###onSetupComplete
+- **Type:** Function
+- **Default:** function(element, slide) { }
 
-###responsive (string, required)
+###onSlideChange
+- **Type:** Function
+- **Default:** function(element, slide) { }
 
-###showArrows (string, required)
+###panelsPerScreen
+- **Type:** Number
+- **Default:** 1
 
-###hideArrowsAtEnd (string, required)
+###panelsToMove
+- **Type:** Number
+- **Default:** 1
 
-###leftArrowClass (string, required)
+###responsive
+- **Type:** Boolean
+- **Default:** true
 
-###leftArrowImage (string, required)
+###resumeOnClick
+- **Type:** Boolean
+- **Default:** true
 
-###rightArrowClass (string, required)
+###rightArrowClass
+- **Type:** String
+- **Default:** 'arrowRight'
 
-###rightArrowImage (string, required)
+###rightArrowImage
+- **Type:** String
+- **Default:** ''
 
-###showMarkers (string, required)
+###showArrows
+- **Type:** Boolean
+- **Default:** false
 
-###markerHolderClass (string, required)
+###showMarkerNumbers
+- **Type:** Boolean
+- **Default:** false
 
-###markerClass (string, required)
+###showMarkers
+- **Type:** Boolean
+- **Default:** false
 
-###markerPosition (string, required)
+###speed
+- **Type:** Number
+- **Default:** 2000
 
-###showMarkerNumbers (string, required)
+###start
+- **Type:** Number
+- **Default:** 0
 
-###onSetupComplete (string, required)
+###vertical
+- **Type:** Boolean
+- **Default:** true
 
-###onSlideChange (string, required)
+###wait
+- **Type:** Number
+- **Default:** 6000
