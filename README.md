@@ -20,10 +20,14 @@ The HMTL structure should be as follows, where slideclass is each individual pan
 ##Configuration
 The plugin can be configured with any of the following options on setup.
 
-###panel (string, required)
+###panel
+
+- **REQUIRED**
+- **Type:** String
+
 The selector used to identify each slide.
 
-####animation 
+###animation 
 - **Type:** String
 - **Default:** 'fade'
 
