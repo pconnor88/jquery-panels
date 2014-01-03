@@ -23,7 +23,7 @@ The plugin can be configured with any of the following options on setup.
 ###panel (string, required)
 The selector used to identify each slide.
 
-###animation 
+####animation 
 - **Type:** String
 - **Default:** 'fade'
 
