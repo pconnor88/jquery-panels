@@ -5,12 +5,36 @@
       	<style type="text/css">
 			.slide {width:800px; height:300px;}
 		</style>
+        <link rel="stylesheet" href="../css/jquery.panels.min.css" />
         <script type="text/javascript" src="../js/jquery-1.7.1.min.js"></script>
+        <script type="text/javascript" src="../plugins/jquery-ui-animations.min.js"></script>
+        
         <script type="text/javascript" src="../js/jquery.panels.js"></script>
         <script type="text/javascript">
 			$(function() {
 				$("#ticker").panels({
-					panel: '.slide'
+					animation: 'slide',
+					startSlide: 2,
+					markerPosition: 's',
+					wait: 3000,
+					speed: 2000,
+					infinite: true,
+					vertical: false,
+					easing: 'easeOutBounce',
+					onSlideBefore: function(element, index) { 
+						console.log("Slide Animate");
+					},
+					onSlideAfter: function(element, index) {
+						console.log("Slide Finish");
+					}
+				});
+				
+				$("#pause").click(function() {
+					$("#ticker").panels('pause');
+				});
+				
+				$("#play").click(function() {
+					$("#ticker").panels('play');
 				});
 			});
 		</script>
@@ -23,6 +47,9 @@
             <img src="../images/image4.jpg" alt="Image4" class="slide">
             <img src="../images/image5.jpg" alt="Image5" class="slide">
         </div>
+        
+        <button id="pause">Pause</button>
+        <button id="play">Play</button>
     
     </body>
 </html>

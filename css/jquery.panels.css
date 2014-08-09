@@ -1,0 +1,94 @@
+.pnl-holder 
+{
+	position:relative;
+}
+
+.pnl-holder .pnl-markers 
+{
+	padding:0; 
+	list-style:none; 
+	position:absolute
+}
+
+.pnl-holder .pnl-markers li 
+{
+	float:left;
+	cursor:pointer;
+}
+
+.pnl-holder .pnl-markers.n 
+{
+	top:0; 
+	left:50%;
+}
+
+.pnl-holder .pnl-markers.ne 
+{
+	top:0; 
+	right:0;
+}
+
+.pnl-holder .pnl-markers.e 
+{
+	top:50%; 
+	right:0;
+}
+
+.pnl-holder .pnl-markers.se 
+{
+	bottom:0; 
+	right:0;
+}
+
+.pnl-holder .pnl-markers.s
+{
+	bottom:0; 
+	left:50%;
+}
+
+.pnl-holder .pnl-markers.sw 
+{
+	bottom:0; 
+	left:0;
+}
+
+.pnl-holder .pnl-markers.w 
+{
+	top:50%; 
+	left:0;
+}
+
+.pnl-holder .pnl-markers.nw 
+{
+	top:0; 
+	left:0;
+}
+
+.pnl-holder .pnl-mask {
+	position:relative; 
+	overflow:hidden; 
+	width:100%; 
+	height:100%;
+}
+
+.pnl-holder .pnl-scroller {
+	position:absolute; 
+	zoom:1;	
+	width:100%;
+	height:100%;
+}
+
+.pnl-markers li {
+	border:2px solid #ffffff;
+	width:10px; 
+	height:10px;
+	border-radius:10px;	
+	margin:0 2px;
+}
+
+.pnl-markers li.active {
+	background:#ffffff;
+}
+
+.slide {float:left; position:relative;}
+.pnl-scroller {width:10000px;}

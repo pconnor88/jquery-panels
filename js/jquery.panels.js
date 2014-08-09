@@ -3,85 +3,64 @@
     // Default settings
     var pluginName = "panels",
         defaults = {
-			panel: '',
+			
+			//General Options
+			
+			panel: null,
 			animation: 'fade',
+			easing: 'linear',
             speed: 2000,
 			wait: 6000,
-			start: 0,
+			startSlide: 0,
 			resumeOnClick: true,
+			pauseOnHover: true,
 			autoScroll: true,
+			responsive: false,	
+			touchSwipe: true,
+			
+			//Slider Options
+			
 			infinite: false,
 			panelsPerScreen: 1,
 			panelsToMove: 1,
 			vertical: false,
-			responsive: false,	
+			easing: 'swing',
+			
+			//Arrow Options
+			
 			showArrows: false,
 			hideArrowsAtEnd: false,
 			leftArrowClass: 'arrowLeft',
 			leftArrowImage: '',
 			rightArrowClass: 'arrowRight',
 			rightArrowImage: '',
-			showMarkers: false,
+			
+			//Marker Options
+			
+			showMarkers: true,
 			markerHolderClass: '',
 			markerClass: '',
 			markerPosition: 'sw',
 			showMarkerNumbers: false,
-			onSetupComplete: function(element, slide) { },
-			onSlideChange: function(element, slide) { }
+			
+			//Event Callbacks
+			
+			onSetupComplete: function(element, index) { },
+			onSlideBefore: function(element, index) { },
+			onSlideAfter: function(element, index) { }
+			
         };
 
     // Constructor
     function Panels( element, options ) {
         
 		this.element = element;
-
-        this.options = $.extend( {}, defaults, options );
-			
+        this.settings = $.extend( {}, defaults, options );
         this._defaults = defaults;
         this._name = pluginName;
 		
-		this.elements = $(this.element).find(this.options.panel).size();
+	    this.init();
 			
-		///Recalculate number of elements based on perScreen and step settings
-		
-		
-		var elementsTemp = 0;
-		for(var i=0; i<this.elements; i+= this.options.panelsToMove) {
-			if((i + this.options.panelsPerScreen) < this.elements) {
-				elementsTemp++;
-			}
-		}
-		
-		//if((this.elements % this.options.panelsPerScreen) != 0) {
-			elementsTemp++;
-		//}
-		
-		this.moveElements = elementsTemp;
-		
-		if(this.options.infinite) {
-			this.moveElements = this.elements;	
-		}
-		
-		this.panelWidth = $(this.element).find(this.options.panel).outerWidth(true);
-		this.panelHeight = $(this.element).find(this.options.panel).outerHeight(true);
-		
-		this.sizeRatio = this.panelHeight/this.panelWidth;
-		
-		//Add event listener to resize on window resize
-		if(this.options.responsive) {
-			$(this.element).width("100%");
-			this.resize();
-			var panel = this;
-			
-			$(window).resize(function(e) {
-				panel.resize();
-            });
-		}
-		
-		this.currentPosition = this.options.start;
-		this.timerval = null;
-        this.init();
-		
     }
 
     Panels.prototype = {
@@ -89,67 +68,91 @@
         init: function() {
 				
 			var plugin = this;
-			
-			if((this.currentPosition >= this.elements) || (this.currentPosition < 0)) {
-				this.currentPosition = 0;	
-			}
-			
-			$(this.element).css({
-				"position": "relative"
-			});
-			
-			switch(this.options.animation)
-			{
-				case "slide":				
+			var element = $(plugin.element);
 					
-					//Insert the mask element
-					if(this.options.vertical) {
+			element.addClass("pnl-holder");
+			
+			plugin.slides = 	((plugin.settings.panel !== undefined) && (plugin.settings.panel !== '')) ? element.children(plugin.settings.panel) : element.children();
+			plugin.slideCount = plugin.slides.size();
+					
+			plugin.panelWidth = $(plugin.slides[0]).outerWidth(true);
+			plugin.panelHeight = $(plugin.slides[0]).outerHeight(true);
+			
+			
+			// If the current position is out of range, keep looping round the count till that number is reached. 
+			// NB: Javascript negative modulus is broken, had to apply fix ((this%n)+n)%n.			
+			plugin.currentPosition = ((plugin.settings.startSlide >= plugin.slideCount) || (plugin.settings.startSlide < 0)) ? (((plugin.settings.startSlide%plugin.slideCount)+plugin.slideCount)%plugin.slideCount) : plugin.settings.startSlide;
+			
+			plugin.timer = null;
+			
+			//Slider Animation Setup
+			switch(plugin.settings.animation)
+			{
+				case "slide":	
+					
+					//inject the mask and scroller element
+					plugin.slides.wrapAll("<div class=\"pnl-mask\"><div class=\"pnl-scroller\"></div></div>");
+					plugin.slider = element.find(".pnl-scroller");		
+					
+					if(plugin.settings.vertical) {
 						
-						$(this.element).children(this.options.panel).wrapAll("<div class=\"mask\" style=\"position:relative; overflow:hidden; width: " + this.panelWidth + "px; height: " + (this.panelHeight * this.options.panelsPerScreen) + "px;\"><div class=\"scroller\" style=\"position:absolute; zoom:1; width: " + this.panelWidth + "px; height: " + ((this.panelHeight*this.elements)+20) + "px;\"></div></div>");
-						$(this.element).find(".scroller").css("top", (this.panelHeight*this.currentPosition*-1) + "px");
-						$(this.element).find(this.options.panel).css({
+						plugin.slides.css({
 							position: 'relative'
 						});
-						$(this.element).css({
-							"height": (this.panelHeight * this.options.panelsPerScreen),
-							"width": this.panelWidth
+						
+						plugin.slider.css({
+							height: (plugin.panelHeight*plugin.slideCount)+20,
+							top: (plugin.slides.eq(plugin.currentPosition).position().top) * -1
 						});
+						
+						element.css({
+							width: plugin.panelWidth,
+							height: plugin.panelHeight
+						});
+					
 					} else {
-						$(this.element).children(this.options.panel).wrapAll("<div class=\"mask\" style=\"position:relative; overflow:hidden; width: " + (this.panelWidth * this.options.panelsPerScreen) + "px; height: " + this.panelHeight + "px;\"><div class=\"scroller\" style=\"position:absolute; zoom:1; width: " + ((this.panelWidth*this.elements)+20) + "px; height: " + this.panelHeight + "px;\"></div></div>");
-						$(this.element).find(".scroller").css("left", (this.panelWidth*this.currentPosition*-1) + "px");
-						$(this.element).find(this.options.panel).css({
+												
+						plugin.slides.css({
 							position: 'relative',
 							float: 'left'
 						});
-						$(this.element).css({
-							"width": (this.panelWidth * this.options.panelsPerScreen),
-							"height": this.panelHeight
+												
+						element.css({
+							width: plugin.panelWidth,
+							height: plugin.panelHeight
 						});
+												
+						plugin.slider.css({
+							width: (plugin.panelWidth*plugin.slideCount)+20
+						}).css({
+							left: (plugin.slides.eq(plugin.currentPosition).position().left) * -1
+						});
+						
 					}
 					
-					//If infinite then we need to make a custom slider..
-					if(this.options.infinite) {
-						$(this.element).find(this.options.panel).addClass("hidden").hide();
-						//Create the container, which is what will be sliding.
-						$(this.element).find(this.options.panel).eq(this.currentPosition).clone().width("100%").insertBefore($(this.element).find(this.options.panel + ":first")).removeClass("hidden").addClass("infinite").empty().show();
+					//Infinite mode setup
+					if(plugin.settings.infinite) {
 						
-						//Load the slider with all the elements needed.
-												
-						for(var s = 0; s < this.options.panelsPerScreen; s++) {
+						element.append("<div class=\"pnl-hidden-slides\"></div>");
 						
-							var sc = this.options.start + s;
+						plugin.slides.appendTo(element.find(".pnl-hidden-slides").hide());
 						
-							if(sc >= this.elements) {
-								sc = sc % this.elements;	
+						//Populate the slider with all the elements on show.
+						for(var s = 0; s < plugin.settings.panelsPerScreen; s++) {
+						
+							var sc = plugin.settings.startSlide + s;
+						
+							if(sc >= plugin.slideCount) {
+								sc = sc % plugin.slideCount;	
 							}
-						
-							$(this.element).find(".scroller").children(this.options.panel + ":not(.infinite)").eq(sc).clone().removeClass("hidden").show().appendTo($(this.element).find(".infinite"));
+													
+							plugin.slides.eq(sc).clone().appendTo(plugin.slider);
 							
 						}
-						
-						$(this.element).find(".scroller").css("left", "0px");
-						
-						
+
+						plugin.slider.css({
+							left: 0
+						});
 						
 					}
 									
@@ -158,61 +161,133 @@
 				
 				default:
 					
-					$(this.element).css({
-						"width": this.panelWidth,
-						"height": this.panelHeight
-					}).children(this.options.panel).css({
+					element.css({
+						"width": plugin.panelWidth,
+						"height": plugin.panelHeight
+					});
+					
+					plugin.slides.css({
 						"position": "absolute",
 						"top": "0px",
 						"left": "0px"
-					}).not(":eq(" + this.currentPosition + ")").hide();	
+					}).not(":eq(" + plugin.currentPosition + ")").hide();	
 					
 			}
 			
+			//Markers Setup
+			if(plugin.settings.showMarkers) {
+				
+				// Only add markers if there is more than 1 slide
+				if (plugin.slideCount > 1) {
+				
+					var buttonTemplate = "";
+					buttonTemplate += "<ul class=\"pnl-markers " + plugin.settings.markerPosition + " " + plugin.settings.markerHolderClass + "\">";
+					
+					for(i=0; i<plugin.slideCount; i++) {
+						
+						buttonTemplate += "<li class=\"" + plugin.settings.markerClass + "\">";
+						buttonTemplate += (plugin.settings.showMarkerNumbers) ? (i+1) : "";
+						buttonTemplate += "</li>";
+						
+					}
+					
+					buttonTemplate += "</ul>";
+													
+					element.append(buttonTemplate);
+					
+					plugin.markers = element.children(".pnl-markers");
+					plugin.marker = plugin.markers.children("li");
+					
+					var bulletWidth = plugin.marker.outerWidth(true);
+					var bulletHeight = plugin.marker.outerHeight(true);
+										
+					switch(plugin.settings.markerPosition)
+					{
+						case "n":
+							plugin.markers.css({
+								"marginLeft": ((bulletWidth * plugin.slideCount)/2) * -1
+							});
+							break;
+						
+						case "e":
+							plugin.markers.css({
+								"marginTop": (bulletHeight/2) * -1
+							});
+							break;
+							
+						case "s":
+							plugin.markers.css({
+								"marginLeft": ((bulletWidth * plugin.slideCount)/2) * -1
+							});
+							break;
+							
+						case "w":
+							plugin.markers.css({
+								"marginTop": (bulletHeight/2) * -1
+							});
+							break;
+							
+					} 
+					
+					plugin.marker.click(function(e) {
+						
+						var newIndex = plugin.marker.index(this);
+						var moveDirection = (newIndex < plugin.currentPosition) ? -1 : 1;
+																				
+						plugin.currentPosition = plugin.move(moveDirection,newIndex,true);
+						e.preventDefault();
+						
+					}).eq(plugin.currentPosition).addClass("active");
+				}
+			}
 			
-			
-			
-			
-			if(this.options.showArrows) {
+			//Arrows Setup
+			if(plugin.settings.showArrows) {
 				
 				// Only add arrows if there is more than 1 slide
-				if(this.moveElements > 1) {
+				if (plugin.slideCount > 1) {
 			
-					// Inject the arrows
-					var arrowHTMLImageLeft = "";
-					var arrowHTMLImageRight = "";
+					var arrowTemplate = "";
 					
-					if (this.options.leftArrowImage.length > 0) { arrowHTMLImageLeft = "<img src=\"" + this.options.leftArrowImage + "\" alt=\"Previous slide\" />" }
-					if (this.options.rightArrowImage.length > 0) { arrowHTMLImageRight = "<img src=\"" + this.options.rightArrowImage + "\" alt=\"Next slide\" />" }
+					arrowTemplate += "<a class=\"pnl-arrow-left " + plugin.settings.leftArrowClass + "\" href=\"#\">";
+					arrowTemplate += (plugin.settings.leftArrowImage.length) ? "<img src=\"" + plugin.settings.leftArrowImage + "\" alt=\"Previous slide\" />" : "";
+					arrowTemplate += "</a>";
+					arrowTemplate += "<a class=\"pnl-arrow-right " + plugin.settings.rightArrowImage + "\" href=\"#\">";
+					arrowTemplate += (plugin.settings.rightArrowImage.length) ? "<img src=\"" + plugin.settings.rightArrowImage + "\" alt=\"Next slide\" />" : "";
+					arrowTemplate += "</a>";
 					
-					var arrowHTML = "<a class=\"pnl-arrow-left " + this.options.leftArrowClass + "\" href=\"#\">" + arrowHTMLImageLeft + "</a><a class=\"pnl-arrow-right " + this.options.rightArrowClass + "\" href=\"#\">" + arrowHTMLImageRight + "</a>";
-					$(this.element).append(arrowHTML);
+					element.append(arrowTemplate);
+					
+					plugin.leftArrow = element.children(".pnl-arrow-left");
+					plugin.rightArrow = element.children(".pnl-arrow-right");
 					
 					//Setup listeners
-					$(this.element).children(".pnl-arrow-left").click(function() {
-						plugin.currentPosition = plugin.movePanel(plugin.element, plugin.options, -1, true, -1);
-						return false;
+					plugin.leftArrow.click(function(e) {
+						plugin.currentPosition = plugin.move(-1, false, true);
+						e.preventDefault();
 					});
 					
-					$(this.element).children(".pnl-arrow-right").click(function() {
-						plugin.currentPosition = plugin.movePanel(plugin.element, plugin.options, 1, true, -1);
-						return false;
+					plugin.rightArrow.click(function(e) {
+						plugin.currentPosition = plugin.move(1, false, true);
+						e.preventDefault();
 					});
 					
-					if((this.options.hideArrowsAtEnd) && (!this.options.infinite)) {
+					//PROBABLY WANT TO MOVE THIS INTO A FUNCTION TO REFACTOR
+					//Check to see if any of the arrows should be hidden at the start
+					if((plugin.settings.hideArrowsAtEnd) && (!plugin.settings.infinite)) {
 																										
-						//Hide the arrow if at the start
-						if(this.currentPosition == 0) {
-							$(this.element).children(".pnl-arrow-left").hide();
+						//Hide the left arrow if at the start
+						if(plugin.currentPosition == 0) {
+							plugin.leftArrow.hide();
 						} else {
-							$(this.element).children(".pnl-arrow-left").show();
+							plugin.leftArrow.show();
 						}
 						
-						//Hide the arrow if at the end
-						if(this.currentPosition == (this.moveElements -1)) {
-							$(this.element).children(".pnl-arrow-right").hide();
+						//Hide the right arrow if at the end
+						if(plugin.currentPosition >= (plugin.slideCount -1)) {
+							plugin.rightArrow.hide();
 						} else {
-							$(this.element).children(".pnl-arrow-right").show();
+							plugin.rightArrow.show();
 						}
 						
 					}
@@ -220,424 +295,440 @@
 				}
 			}
 			
-			if(this.options.showMarkers) {
-					
-					if (this.moveElements > 1) {
-		
-						var ButtonHTML = "<ul class=\"pnl-markers" + this.options.markerHolderClass + "\" style=\"padding:0px; list-style:none;\">";
+			//Timers Setup	
+			if(plugin.settings.autoScroll) {
 						
-						for(i = 0; i < this.moveElements; i++) {
-							ButtonHTML += "<li style=\"float:left\"><a href=\"#\" class=\"" + this.options.markerClass + "\">";
-							
-							if(this.options.showMarkerNumbers) {
-								ButtonHTML += (i+1);
-							}
-							
-							ButtonHTML += "</a></li>";
-						}
-						
-						ButtonHTML += "</ul>";
-														
-						$(this.element).append(ButtonHTML);
-						
-						var bulletWidth = $(this.element).children(".pnl-markers").children("li").outerWidth(true);
-						var bulletHeight = $(this.element).children(".pnl-markers").children("li").outerHeight(true);
-												
-						switch(this.options.markerPosition)
-						{
-							case "n":
-								$(this.element).children(".pnl-markers").css({
-									"position": "absolute",
-									"top": "0px",
-									"left": "50%",
-									"marginLeft": ((bulletWidth * this.moveElements)/2) * -1
-								});
-								break;
-								
-							case "ne":
-								$(this.element).children(".pnl-markers").css({
-									"position": "absolute",
-									"top": "0px",
-									"right": "0px"
-								});
-								break;
-								
-							case "e":
-								$(this.element).children(".pnl-markers").css({
-									"position": "absolute",
-									"right": "0px",
-									"top": "50%",
-									"marginTop": (bulletHeight/2) * -1
-								});
-								break;
-								
-							case "se":
-								$(this.element).children(".pnl-markers").css({
-									"position": "absolute",
-									"bottom": "0px",
-									"right": "0px"
-								});
-								break;
-								
-							case "s":
-								$(this.element).children(".pnl-markers").css({
-									"position": "absolute",
-									"bottom": "0px",
-									"left": "50%",
-									"marginLeft": ((bulletWidth * this.moveElements)/2) * -1
-								});
-								break;
-								
-							case "w":
-								$(this.element).children(".pnl-markers").css({
-									"position": "absolute",
-									"left": "0px",
-									"top": "50%",
-									"marginTop": (bulletHeight/2) * -1
-								});
-								break;
-								
-							case "nw":
-								$(this.element).children(".pnl-markers").css({
-									"position": "absolute",
-									"top": "0px",
-									"left": "0px"
-								});
-								break;
-							
-							default:
-								$(this.element).children(".pnl-markers").css({
-									"position": "absolute",
-									"bottom": "0px",
-									"left": "0px"
-								});
-								
-						} 
-						
-						this.options.markerHolderClass = "." + this.options.markerHolderClass;
-						$(this.element).children(".pnl-markers").children("li:eq(" + this.currentPosition + ")").addClass("active");
-						
-						var plugin = this;
-						
-						//Setup listeners
-						$(this.element).children(".pnl-markers").children("li").children("a").click(function() {
-							
-							var listing = $(this).parent("li");	
-							var newIndex = $(plugin.element).children(".pnl-markers").children("li").index(listing);
-							
-							var moveDirection = 1;
-							
-							if(newIndex < plugin.currentPosition) 
-							{
-								moveDirection = -1;
-							}
-														
-							plugin.currentPosition = plugin.movePanel(plugin.element, plugin.options, moveDirection, true, newIndex);
-							return false;
-							
-						});
-					}
+				plugin.timer = setTimeout(function() { 
+					plugin.currentPosition = plugin.move(1, false, false);
+				}, plugin.settings.wait);
+				
 			}
 			
-						
-			//Setup swipe gestures for mobile devices
-			var touchStartX, touchStartY, touchEndX, touchEndY, touchDiff;
-			
-			if (this.element.addEventListener) { 
-			
-				this.element.addEventListener('touchstart', function (e) {
+			//Touch Event Setup
+			if(plugin.settings.touchSwipe) {
+				
+ 				var touchStartX;
+ 				var touchStartY;
+				var swipeThreshold = 150;
+				var swipeRestraint = 100;
+ 
+ 				plugin.element.addEventListener('touchstart', function(e){
 					
 					touchStartX = e.changedTouches[0].pageX;
 					touchStartY = e.changedTouches[0].pageY;
+  					e.preventDefault();
+ 
+ 				}, false);
+ 
+				plugin.element.addEventListener('touchmove', function(e){
+					
+					e.preventDefault();
+					
 				}, false);
-				
-				this.element.addEventListener("touchmove", function (e) {
+ 
+				plugin.element.addEventListener('touchend', function(e){
 					
-					touchEndX = e.changedTouches[0].pageX;
-					touchEndY = e.changedTouches[0].pageY;
+					var touchDistX = e.changedTouches[0].pageX - touchStartX;
+					var touchDistY = e.changedTouches[0].pageY - touchStartY;
 					
-					if(Math.abs(touchEndX - touchStartX) > Math.abs(touchEndY - touchStartY)) {
-						e.preventDefault();	
+					if ((Math.abs(touchDistX) >= swipeThreshold) && (Math.abs(touchDistY) <= swipeRestraint) && (!plugin.settings.vertical)){
+						plugin.currentPosition = (touchDistX < 0) ? plugin.move(1,false,true) : plugin.move(-1,false,true)
+					}
+					else if ((Math.abs(touchDistY) >= swipeThreshold) && (Math.abs(touchDistX) <= swipeRestraint) && (plugin.settings.vertical)){
+						plugin.currentPosition = (touchDistY < 0) ? plugin.move(1,false,true) : plugin.move(-1,false,true)
 					}
 					
-				},false);
-				
-				this.element.addEventListener("touchend", function (e) {
+					e.preventDefault();
 					
-					if(Math.abs(touchStartX - touchEndX) > Math.abs(touchStartY - touchEndY)) {
-																			
-						if((touchStartX - touchEndX) > 0) {
-							plugin.currentPosition = plugin.movePanel(plugin.element, plugin.options, 1, true, -1);
-						} else {
-							plugin.currentPosition = plugin.movePanel(plugin.element, plugin.options, -1, true, -1);
-						}
-						
-					}
-	
 				}, false);
-				
-			}
-			
-			// Setting up timers	
-			if(this.options.autoScroll) {
-						
-				this.timerval = setInterval(function() { 
-					plugin.currentPosition = plugin.movePanel(plugin.element, plugin.options, 1, false, -1);
-				}, this.options.wait);
-				
 			}
 			
 			//Completed setup, call the complete funciton..
-			this.options.onSetupComplete(this,$(this.element).find(this.options.panel + ":eq(" + this.currentPosition + ")"));
+			plugin.settings.onSetupComplete(element, plugin.currentPosition);
 			
-        },
+			
+			
+					/////Recalculate number of elements based on perScreen and step settings
+//		
+//		
+//		var elementsTemp = 0;
+//		for(var i=0; i<this.elements; i+= this.options.panelsToMove) {
+//			if((i + this.options.panelsPerScreen) < this.elements) {
+//				elementsTemp++;
+//			}
+//		}
+//		
+//		//if((this.elements % this.options.panelsPerScreen) != 0) {
+//			elementsTemp++;
+//		//}
+//		
+//		this.moveElements = elementsTemp;
+//		
+//		if(this.options.infinite) {
+//			this.moveElements = this.elements;	
+//		}
+//		
 
-        movePanel: function(el, options, direction, userClick, setNextSlide) {
-            			
+//		
+//		this.sizeRatio = this.panelHeight/this.panelWidth;
+//		
+//		//Add event listener to resize on window resize
+//		if(this.options.responsive) {
+//			$(this.element).width("100%");
+//			this.resize();
+//			var panel = this;
+//			
+//			$(window).resize(function(e) {
+//				panel.resize();
+//            });
+//		}
+//		
+		
+        },
+//
+        move: function(direction, setNextSlide, userClick) {
+			
+			var plugin = this;
+			var element = $(this.element);
+			
+			if(plugin.timer !== null) {
+				clearTimeout(plugin.timer);	
+			}
+			
 			// Set the slide to be displayed
-			var nextSlide = this.currentPosition;
+			var nextSlide = plugin.currentPosition;
+						
+			//If override is set, set nextslide to that, else add on the direction
+			(setNextSlide !== false) ? (nextSlide = setNextSlide) : (nextSlide += direction)
 			
-			if((userClick) || ((!$(el).children(options.panel + ":eq(" + nextSlide + ")").is(":animated")) && (options.animation == "fade")) || ((!$(el).find(".scroller").is(":animated")) && (options.animation == "slide"))) {
-			
-				if(userClick) {
-					clearInterval(this.timerval);	
-				}
-																							
-				if(options.autoScroll || userClick) {
+			// make sure the next slide is in range..
+			nextSlide = ((nextSlide >= plugin.slideCount) || (nextSlide < 0)) ? (((nextSlide%plugin.slideCount)+plugin.slideCount)%plugin.slideCount) : nextSlide;
+
+			//Only animate if trying to move to a different slide
+			if(nextSlide != plugin.currentPosition) {
+				
+				//Setup callbacks for slideBefore and slideAfter
+				plugin.settings.onSlideBefore(element,nextSlide);
+				
+				switch(plugin.settings.animation)
+				{
 					
-					nextSlide += (direction * this.options.panelsToMove);
-					var panelsToMoveThisTime = this.options.panelsToMove;
-									
-					if(setNextSlide > -1) {
-						nextSlide = setNextSlide;
-						panelsToMoveThisTime = Math.abs(nextSlide - this.currentPosition);
-					}
-										
-					// Check to make sure the next panel isnt out of range..
-					if(nextSlide < 0) {
-						nextSlide = nextSlide % this.moveElements;
-						nextSlide = this.moveElements + nextSlide;
-					}
+					case "slide":
 					
-					if(nextSlide >= this.moveElements) {
-						nextSlide = nextSlide % this.moveElements;
-					}
+						//Slide animation is split into two parts, infinite and regular
 					
-										
-					//Only show some animation if trying to access a different slide
-					if(nextSlide != this.currentPosition) {
-																	
-						//Switch through the animation types and do the necessary animation
-						switch(options.animation)
-						{
-							case "slide":
-								
-								
-								//If Infinite scroll, handle the move function completely differently..
-								if(options.infinite) {
+						if(plugin.settings.infinite) {
 							
-									if(direction == 1) {
-																				
-										//Add the number of nodes we are moving after the current slide
-										
-										for(var s = 0; s < panelsToMoveThisTime; s++) {
-											
-											var sc = this.currentPosition + this.options.panelsPerScreen + s;
-																															
-											if(sc >= this.elements) {
-												sc = sc % this.elements;	
-											}
-																					
-											$(this.element).find(".scroller").children(this.options.panel + ":not(.infinite)").eq(sc).clone().removeClass("hidden").show().appendTo($(this.element).find(".infinite"));
-											
-										}
-																				
-										//$(el).find(options.panel + ".hidden:eq(" + nextSlide + ")").clone().insertAfter($(el).find(options.panel + ".infinite")).removeClass("hidden").show();	
-										
-										if(options.vertical) {
-											$(el).find(".scroller").animate({
-												top: (this.panelHeight  * panelsToMoveThisTime) * -1
-											}, function() {
-												$(el).find(options.panel + ".infinite").children(options.panel + ":lt(" + panelsToMoveThisTime + ")").remove();
-												$(this).css({top:0});
-											});
-										} else {
-											$(el).find(".scroller").animate({
-												left: (this.panelWidth * panelsToMoveThisTime) * -1
-											},function() {
-												$(el).find(options.panel + ".infinite").children(options.panel + ":lt(" + panelsToMoveThisTime + ")").remove();
-												$(this).css({left:0});
-											});
-										}
+							//Use the direction to determine where to put the next slide
+							if(direction == 1) {
+								
+								plugin.slides.eq(nextSlide).clone().appendTo(plugin.slider);
+								plugin.slider.animate({
+									left: '-100%'
+								},plugin.settings.speed,plugin.settings.easing,function() {
+									//remove the old code and reset
+									
+									for(var s = 0; s < plugin.settings.panelsPerScreen; s++) {
+						
 																
-									} else {
+										plugin.slider.children().eq(s).remove();
 										
-										//Add a node before the current slide
-										
-										//Add the number of nodes we are moving after the current slide
-										
-										var sc = this.currentPosition
-										
-										for(var s = 0; s < panelsToMoveThisTime; s++) {
-											
-											sc--;
-																				
-											if(sc < 0) {
-												sc = this.elements-1;	
-											}
-																					
-											$(this.element).find(".scroller").children(this.options.panel + ":not(.infinite)").eq(sc).clone().removeClass("hidden").show().prependTo($(this.element).find(".infinite"));
-											
-										}
-										
-																				
-										//$(el).find(options.panel + ".hidden:eq(" + nextSlide + ")").clone().insertBefore($(el).find(options.panel + ".infinite")).removeClass("hidden").show();	
-										
-										if(options.vertical) {
-											
-											$(el).find(".scroller").css({top:(this.panelHeight  * panelsToMoveThisTime) * -1}).animate({
-												top: 0
-											}, function() {
-												var sl = $(el).find(options.panel + ".infinite").children().size();
-												$(el).find(options.panel + ".infinite").children(options.panel + ":gt(" + (sl-panelsToMoveThisTime -1)  + ")").remove();
-											});
-											
-										} else {
-											
-											$(el).find(".scroller").css({left:(this.panelWidth  * panelsToMoveThisTime) * -1}).animate({
-												left: 0
-											}, function() {
-												var sl = $(el).find(options.panel + ".infinite").children().size();
-												$(el).find(options.panel + ".infinite").children(options.panel + ":gt(" + (sl-panelsToMoveThisTime -1)  + ")").remove();
-											});
-											
-											
-											
-										}
-										
-									}
-																						
-								} else {
-								
-									//Normal Scroll..
-									var scrollToSlide = nextSlide;
-									if(((scrollToSlide * this.options.panelsToMove) + this.options.panelsPerScreen) >= (this.elements)) {
-																				
-										if(options.vertical) {
-											$(el).find(".scroller").animate({
-												top: ((this.elements - this.options.panelsPerScreen) * this.panelHeight) * -1
-											});
-										} else {
-											$(el).find(".scroller").animate({
-												left: ((this.elements - this.options.panelsPerScreen) * this.panelWidth) * -1
-											});
-										}
-										 
-									} else {
-										if(options.vertical) {
-											$(el).find(".scroller").animate({
-												top: (scrollToSlide * (this.panelHeight * this.options.panelsToMove)) * -1
-											});
-										} else {
-											$(el).find(".scroller").animate({
-												left: (scrollToSlide * (this.panelWidth * this.options.panelsToMove)) * -1
-											});
-										}
 									}
 									
-								}
+									plugin.slider.css({
+										left: 0
+									});
+									plugin.settings.onSlideAfter(element,nextSlide)	
+								});
 								
-								
-								break;
-							
-							default:
-								
-								// Fade by default
-								$(el).children(options.panel + ":eq(" + this.currentPosition + ")").fadeOut(options.speed);
-								$(el).children(options.panel + ":eq(" + nextSlide + ")").fadeIn(options.speed);	
-							
-						}
-						
-						
-						//UPDATE THE CURRENT POSITION TO BE THE NEW POSITION
-						this.currentPosition = nextSlide;
-						
-						if((options.showArrows) && (options.hideArrowsAtEnd)) {
-																									
-							//Hide the arrow if at the start
-							if(this.currentPosition == 0) {
-								$(this.element).children(".pnl-arrow-left").hide();
 							} else {
-								$(this.element).children(".pnl-arrow-left").show();
+								
+								plugin.slides.eq(nextSlide).clone().prependTo(plugin.slider);
+								
+								plugin.slider.css({
+										left: '-100%'
+									});
+								
+								plugin.slider.animate({
+									left: 0
+								},plugin.settings.speed,plugin.settings.easing,function() {
+									//remove the old code and reset
+									
+									for(var s = 0; s < plugin.settings.panelsPerScreen; s++) {
+						
+														
+										plugin.slider.children().eq((-1 - s)).remove();
+										
+									}
+									
+									
+									plugin.settings.onSlideAfter(element,nextSlide)	
+								});
+								
 							}
 							
-							//Hide the arrow if at the end
-							if(this.currentPosition == (this.moveElements -1)) {
-								$(this.element).children(".pnl-arrow-right").hide();
-							} else {
-								$(this.element).children(".pnl-arrow-right").show();
-							}
+						} else {
+					
+							//If vertical, set the top property else set the left one
+							var animateSettings = (plugin.settings.vertical) ? {top: (plugin.slides.eq(nextSlide).position().top) * -1} : {left: (plugin.slides.eq(nextSlide).position().left) * -1};
+															
+							plugin.slider.animate(animateSettings,plugin.settings.speed,plugin.settings.easing,function() {
+								plugin.settings.onSlideAfter(element,nextSlide)	
+							});
 							
 						}
-							
 						
-												
-						// Update the active marker if markers are shown.
-						if(options.showMarkers) {
-							$(el).children(".pnl-markers").children("li").removeClass("active");
-							$(el).children(".pnl-markers").children("li:eq(" + nextSlide + ")").addClass("active");					
-						}
-												
-					}
+						break;
 					
-					//Setup timers again if permission to do so
-					if(userClick && options.resumeOnClick) {
-						
-						this.options.autoScroll = true;
-						var plugin = this;
-						
-						this.timerval = setInterval(function() { 
-							plugin.currentPosition = plugin.movePanel(el, options, 1, false, -1);
-						}, options.wait);
-					}
-					
-				}
-				
-				
-				if(options.infinite) 
-				{
-					if(direction == 1) {
-						options.onSlideChange(this, $(el).find(options.panel + ".infinite").children(options.panel + ":eq(" + options.panelsToMove + ")"));	
-					} else {
-						options.onSlideChange(this, $(el).find(options.panel + ".infinite").children(options.panel + ":eq(0)"));	
-					}
-				} 
-				else 
-				{
-					options.onSlideChange(this, $(el).find(options.panel + ":eq(" + this.currentPosition + ")"));
+					default:
+						plugin.slides.eq(plugin.currentPosition).fadeOut(plugin.settings.speed);
+						plugin.slides.eq(nextSlide).fadeIn(plugin.settings.speed);
+						break;	
 				}
 				
 			}
 			
-
+			if(plugin.settings.showMarkers) {
+				plugin.marker.removeClass("active");
+				plugin.marker.eq(nextSlide).addClass("active");					
+			}
+			
+			//Set the next animation up if needed
+			//Time has to be animation time + wait time so doesn't fire too early
+			if((userClick && plugin.settings.resumeOnClick) || (plugin.settings.autoScroll)) {
+				
+				plugin.settings.autoScroll = true;
+				
+				plugin.timer = setTimeout(function() { 
+					plugin.currentPosition = plugin.move(1, false, false);
+				}, (plugin.settings.wait + plugin.settings.speed));
+				
+			}
+			
+			
 			return nextSlide;
 			
+//			if((userClick) || ((!$(el).children(options.panel + ":eq(" + nextSlide + ")").is(":animated")) && (options.animation == "fade")) || ((!$(el).find(".scroller").is(":animated")) && (options.animation == "slide"))) {
+//			
+				
+//																							
+//				if(options.autoScroll || userClick) {
+//					
+//					nextSlide += (direction * this.options.panelsToMove);
+//					var panelsToMoveThisTime = this.options.panelsToMove;
+//									
+//					
+//										
+//					
+//					
+//										
+//					
+//					
+//																	
+//						//Switch through the animation types and do the necessary animation
+//						
+//							case "slide":
+//								
+//								
+//								//If Infinite scroll, handle the move function completely differently..
+//								if(options.infinite) {
+//							
+//									if(direction == 1) {
+//																				
+//										//Add the number of nodes we are moving after the current slide
+//										
+//										for(var s = 0; s < panelsToMoveThisTime; s++) {
+//											
+//											var sc = this.currentPosition + this.options.panelsPerScreen + s;
+//																															
+//											if(sc >= this.elements) {
+//												sc = sc % this.elements;	
+//											}
+//																					
+//											$(this.element).find(".scroller").children(this.options.panel + ":not(.infinite)").eq(sc).clone().removeClass("hidden").show().appendTo($(this.element).find(".infinite"));
+//											
+//										}
+//																				
+//										//$(el).find(options.panel + ".hidden:eq(" + nextSlide + ")").clone().insertAfter($(el).find(options.panel + ".infinite")).removeClass("hidden").show();	
+//										
+//										if(options.vertical) {
+//											$(el).find(".scroller").animate({
+//												top: (this.panelHeight  * panelsToMoveThisTime) * -1
+//											}, function() {
+//												$(el).find(options.panel + ".infinite").children(options.panel + ":lt(" + panelsToMoveThisTime + ")").remove();
+//												$(this).css({top:0});
+//											});
+//										} else {
+//											$(el).find(".scroller").animate({
+//												left: (this.panelWidth * panelsToMoveThisTime) * -1
+//											},function() {
+//												$(el).find(options.panel + ".infinite").children(options.panel + ":lt(" + panelsToMoveThisTime + ")").remove();
+//												$(this).css({left:0});
+//											});
+//										}
+//																
+//									} else {
+//										
+//										//Add a node before the current slide
+//										
+//										//Add the number of nodes we are moving after the current slide
+//										
+//										var sc = this.currentPosition
+//										
+//										for(var s = 0; s < panelsToMoveThisTime; s++) {
+//											
+//											sc--;
+//																				
+//											if(sc < 0) {
+//												sc = this.elements-1;	
+//											}
+//																					
+//											$(this.element).find(".scroller").children(this.options.panel + ":not(.infinite)").eq(sc).clone().removeClass("hidden").show().prependTo($(this.element).find(".infinite"));
+//											
+//										}
+//										
+//																				
+//										//$(el).find(options.panel + ".hidden:eq(" + nextSlide + ")").clone().insertBefore($(el).find(options.panel + ".infinite")).removeClass("hidden").show();	
+//										
+//										if(options.vertical) {
+//											
+//											$(el).find(".scroller").css({top:(this.panelHeight  * panelsToMoveThisTime) * -1}).animate({
+//												top: 0
+//											}, function() {
+//												var sl = $(el).find(options.panel + ".infinite").children().size();
+//												$(el).find(options.panel + ".infinite").children(options.panel + ":gt(" + (sl-panelsToMoveThisTime -1)  + ")").remove();
+//											});
+//											
+//										} else {
+//											
+//											$(el).find(".scroller").css({left:(this.panelWidth  * panelsToMoveThisTime) * -1}).animate({
+//												left: 0
+//											}, function() {
+//												var sl = $(el).find(options.panel + ".infinite").children().size();
+//												$(el).find(options.panel + ".infinite").children(options.panel + ":gt(" + (sl-panelsToMoveThisTime -1)  + ")").remove();
+//											});
+//											
+//											
+//											
+//										}
+//										
+//									}
+//																						
+//								} else {
+//								
+//									//Normal Scroll..
+//									var scrollToSlide = nextSlide;
+//									if(((scrollToSlide * this.options.panelsToMove) + this.options.panelsPerScreen) >= (this.elements)) {
+//																				
+//										if(options.vertical) {
+//											$(el).find(".scroller").animate({
+//												top: ((this.elements - this.options.panelsPerScreen) * this.panelHeight) * -1
+//											});
+//										} else {
+//											$(el).find(".scroller").animate({
+//												left: ((this.elements - this.options.panelsPerScreen) * this.panelWidth) * -1
+//											});
+//										}
+//										 
+//									} else {
+//										if(options.vertical) {
+//											$(el).find(".scroller").animate({
+//												top: (scrollToSlide * (this.panelHeight * this.options.panelsToMove)) * -1
+//											});
+//										} else {
+//											$(el).find(".scroller").animate({
+//												left: (scrollToSlide * (this.panelWidth * this.options.panelsToMove)) * -1
+//											});
+//										}
+//									}
+//									
+//								}
+//								
+//								
+//								break;
+//							
+//							default:
+//								
+//								// Fade by default
+//								
+//							
+//						}
+//						
+//						
+//						//UPDATE THE CURRENT POSITION TO BE THE NEW POSITION
+//						this.currentPosition = nextSlide;
+//						
+//						if((options.showArrows) && (options.hideArrowsAtEnd)) {
+//																									
+//							//Hide the arrow if at the start
+//							if(this.currentPosition == 0) {
+//								$(this.element).children(".pnl-arrow-left").hide();
+//							} else {
+//								$(this.element).children(".pnl-arrow-left").show();
+//							}
+//							
+//							//Hide the arrow if at the end
+//							if(this.currentPosition == (this.moveElements -1)) {
+//								$(this.element).children(".pnl-arrow-right").hide();
+//							} else {
+//								$(this.element).children(".pnl-arrow-right").show();
+//							}
+//							
+//						}
+//							
+//						
+//												
+//						// Update the active marker if markers are shown.
+//						if(options.showMarkers) {
+//							$(el).children(".pnl-markers").children("li").removeClass("active");
+//							$(el).children(".pnl-markers").children("li:eq(" + nextSlide + ")").addClass("active");					
+//						}
+//												
+//					}
+//					
+//					//Setup timers again if permission to do so
+//					if(userClick && options.resumeOnClick) {
+//						
+//						this.options.autoScroll = true;
+//						var plugin = this;
+//						
+//						this.timerval = setInterval(function() { 
+//							plugin.currentPosition = plugin.movePanel(el, options, 1, false, -1);
+//						}, options.wait);
+//					}
+//					
+//				}
+//				
+//				
+//				if(options.infinite) 
+//				{
+//					if(direction == 1) {
+//						options.onSlideChange(this, $(el).find(options.panel + ".infinite").children(options.panel + ":eq(" + options.panelsToMove + ")"));	
+//					} else {
+//						options.onSlideChange(this, $(el).find(options.panel + ".infinite").children(options.panel + ":eq(0)"));	
+//					}
+//				} 
+//				else 
+//				{
+//					options.onSlideChange(this, $(el).find(options.panel + ":eq(" + this.currentPosition + ")"));
+//				}
+//				
+//			}
+//			
+//
+//			return nextSlide;
+//			
         },
-		
-		resize: function() {
-			
-			this.panelWidth = $(this.element).width();
-			this.panelHeight = this.panelWidth * this.sizeRatio;
-			$(this.element).find(this.options.panel).width(this.panelWidth).height(this.panelHeight);
-			
-			$(this.element).find(".mask").width(this.panelWidth).height(this.panelHeight);		
-			$(this.element).find(".scroller").width((this.panelWidth*this.elements)+20).height(this.panelHeight);	
-			
-		},
-		
+//		
 		pause: function() {
 		
-			this.options.autoScroll = false;
+			var plugin = this;
+			
+			if(plugin.timer != null) {
+				clearTimeout(plugin.timer);
+			}
+			
+			plugin.settings.autoScroll = false;
 		
 		},
 		
@@ -645,22 +736,16 @@
 			
 			var plugin = this;
 			
-			this.options.autoScroll = true;
-			
-			if(this.timerval == null) {
-
-				this.timerval = setInterval(function() { 
-					plugin.currentPosition = plugin.movePanel(plugin.element, plugin.options, 1, false, -1);
-				}, plugin.options.wait);
-			}
+			plugin.settings.autoScroll = true;
+			plugin.currentPosition = plugin.move(1,false,false);
 				
 		},
 		
 		next: function() {
 		
 			var plugin = this;
-		
-			plugin.currentPosition = plugin.movePanel(plugin.element, plugin.options, 1, true, -1);
+			
+			plugin.currentPosition = plugin.move(1,false,false);
 			
 		},
 		
@@ -668,33 +753,26 @@
 			
 			var plugin = this;
 			
-			plugin.currentPosition = plugin.movePanel(plugin.element, plugin.options, -1, true, -1);
+			plugin.currentPosition = plugin.move(-1,false,false);
 						
+		},
+		
+		gotoSlide: function(newIndex) {
+			
+			var plugin = this;
+			var moveDirection = (newIndex < plugin.currentPosition) ? -1 : 1;
+								
+			plugin.currentPosition = plugin.move(moveDirection,newIndex,false);
+									
 		},
 		
 		destroy: function() {
 			
 			var plugin = this;
-			clearInterval(plugin.timerval);
-			this.options = null;
 			plugin = null;
 						
-		},
-		
-		gotoSlide: function(slideNumber) {
-		
-			var plugin = this;
-			
-			var moveDirection = 1;
-							
-			if(slideNumber < plugin.currentPosition) 
-			{
-				moveDirection = -1;
-			}
-								
-			plugin.currentPosition = plugin.movePanel(plugin.element, plugin.options, moveDirection, true, parseInt(slideNumber));
-									
 		}
+		
 		
     };
 			

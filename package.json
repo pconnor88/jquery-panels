@@ -1,0 +1,14 @@
+{
+  "name": "Grunt-JS-Minifier",
+  "version": "1.0.0",
+  "description": "Minifying JS",
+  "main": "Gruntfile.js",
+  "author": "Pete Connor",
+  "devDependencies": {
+    "grunt": "~0.4.1",
+	"grunt-contrib-uglify": "~0.2.4",
+    "grunt-contrib-cssmin" : "0.6.1",
+    "grunt-contrib-watch" : "0.5.3"
+
+  }
+}
