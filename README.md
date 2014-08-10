@@ -1,7 +1,15 @@
 #jQuery Panels Plugin
 
 ##Usage
-jQuery panels can be setup by including jQuery and the jQuery.panels javascript files in the head of your document, then adding the following code to the bottom of your page.
+jQuery panels can be set up by including `jQuery` and the `jquery.panels.min.js` javascript files in the head of your document, along with the `jquery.panels.min.css` file.
+
+```html
+<link href="css/jquery.panels.min.css" rel="stylesheet">
+<script src="http://code.jquery.com/jquery-latest.min.js"></script>
+<script src="js/jquery.panels.min.js"></script>
+```
+
+The following code can then be used to initialise the panels plugin.
 
 ```javascript
 $(function() {
