@@ -54,7 +54,7 @@ The plugin can be configured with any of the following options on setup.
 | **`onSlideBegin`** | `function` | `function(element, index) { }` | A function that is called once the feature panel begins animating to the next slide. `element` is the jQuery selected plugin, `index` is the current slide number.
 | **`onSlideComplete`** | `function` | `function(element, index) { }` | A function that is called once the feature panel has finished animating to the next slide. `element` is the jQuery selected plugin, `index` is the current slide number.
 
-***Methods
+###Methods
 
 Any of methods below allow you to interact with the plugin from your code after is has been initialised. These functions can be called by passing the string of the function name into the plugin.
 
