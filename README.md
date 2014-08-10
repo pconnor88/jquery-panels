@@ -20,9 +20,9 @@ The HMTL structure should be as follows, where the divs with the class of slide 
 ##Configuration
 The plugin can be configured with any of the following options on setup.
 
-#Options
+###Options
 
 | Name | Type | Default | Description
 | ------------- | ----------- | ------------- | ----------- |
-| panel      | String | null | A string selector for all the slides of the feature panel. If the value is null, all children nodes will be used.
+| `panel`      | String | null | A string selector for all the slides of the feature panel. If the value is null, all children nodes will be used.
 
