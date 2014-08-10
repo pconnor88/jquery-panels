@@ -24,5 +24,32 @@ The plugin can be configured with any of the following options on setup.
 
 | Name | Type | Default | Description
 | ------------- | ----------- | ------------- | ----------- |
-| `panel`      | String | null | A string selector for all the slides of the feature panel. If the value is null, all children nodes will be used.
-
+| `panel` | `string` | `null` | A string selector for all the slides of the feature panel. If the value is `null`, all children nodes will be used.
+| `animation` | `string` - `fade` or `slide` | `fade` | Specify the type of animation you want for the feature panel
+| `easing` | `string` - `linear` or `swing` | `swing` | Specify the type of easing for the animation. If you want to use other easing options than `linear` or `swing` you will have to include an external library.
+| `speed` | `number` | `2000` | The time in ms the animation takes to complete.
+| `wait` | `number` | `6000` | The time in ms a slide is displayed for before moving on to the next one.
+| `startSlide` | `number` | `0` | The slide number to start on.
+| `resumeOnClick` | `boolean` - `true` or `false` | `true` | If set to `true` the feature panel will begin auto scrolling after an user click interaction (the pagination or next/previous arrows).
+| `pauseOnHover` | `boolean` - `true` or `false` | `false` | Specifies whether to pause the plugin on mouse hover.
+| `autoScroll` | `boolean` - `true` or `false` | `true` | Specifies whether to allow the feature panel to scroll through the slides automatically.
+| `responsive` | `boolean` - `true` or `false` | `false` | Use this for responsive sites if you would like the feature panel to be responsive.
+| `touchSwipe` | `boolean` - `true` or `false` | `true` | Allows swipe gestures on mobiles and tables to navigate between the slides.
+| `infinite` | `boolean` - `true` or `false` | `false` | If `true` the feature panel will never slide back to the start when the last slide is reached. If your `animation` value is `fade` then the slider is infinite by default.
+| `panelsPerScreen` | `number` | `1` | The number of slides that are in shown in the default view in the feature panel. This option only applies when `animation` is set to `slide`.
+| `panelsToMove` | `number` | `1` | The number of slides for the feature panel to move when the next/previous buttons are clicked.
+| `vertical` | `boolean` - `true` or `false` | `false` | If `true` the scroller will scroll vertically otherwise it will scroll horizontally.
+| `showArrows` | `boolean` - `true` or `false` | `false` | Specifies whether to show the navigational arrows.
+| `hideArrowsAtEnd` | `boolean` - `true` or `false` | `false` | Specifies whether the necessary arrows should be hidden when you can't scroll in that direction anymore. _(i.e. if you are on the first slide, the left arrow will be disabled)._ *Note: If `infinite` is set to `true` or `animation` is set to `fade` this option will have no effect.*
+| `leftArrowClass` | `string` | `''` | Allows a user defined class to be placed on the left arrow.
+| `leftArrowImage` | `string` | `null` | The filepath to an image to be used for the left arrow, if null then no image will be shown.
+| `rightArrowClass` | `string` | `''` | Allows a user defined class to be placed on the right arrow.
+| `rightArrowImage` | `string` | `null` | The filepath to an image to be used for the right arrow, if null then no image will be shown.
+| `showMarkers` | `boolean` - `true` or `false` | `true` | Specifies whether to show the marker pagination.
+| `markerHolderClass` | `string` | `''` | Allows a user defined class to be placed on the pagination holder (_<ul> node_).
+| `markerClass` | `string` | `''` | Allows a user defined class to be placed on the pagination markers (_<li> node_).
+| `markerPosition` | `string` - `'n'`, `'ne'`, `'e'`, `'se'`, `'s'`, `'sw'`, `'w'` or `'nw'` | `'sw'` | Specifies where the pagination markers should be placed. Only accepts a string that is a compass point.
+| `showMarkerNumbers` | `boolean` - `true` or `false` | `false` | Specifies whether to show numbers inside the pagination markers.
+| `onSetupComplete` | `function` | `function(element, index) { }` | A function that is called once the plugin has initialised. `element` is the jQuery selected plugin, `index` is the current slide number.
+| `onSlideBegin` | `function` | `function(element, index) { }` | A function that is called once the feature panel begins animating to the next slide. `element` is the jQuery selected plugin, `index` is the current slide number.
+| `onSlideComplete` | `function` | `function(element, index) { }` | A function that is called once the feature panel has finished animating to the next slide. `element` is the jQuery selected plugin, `index` is the current slide number.

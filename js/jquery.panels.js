@@ -24,7 +24,6 @@
 			panelsPerScreen: 1,
 			panelsToMove: 1,
 			vertical: false,
-			easing: 'swing',
 			
 			//Arrow Options
 			
@@ -46,8 +45,8 @@
 			//Event Callbacks
 			
 			onSetupComplete: function(element, index) { },
-			onSlideBefore: function(element, index) { },
-			onSlideAfter: function(element, index) { }
+			onSlideBegin: function(element, index) { },
+			onSlideComplete: function(element, index) { }
 			
         };
 
@@ -408,7 +407,7 @@
 			if(nextSlide != plugin.currentPosition) {
 				
 				//Setup callbacks for slideBefore and slideAfter
-				plugin.settings.onSlideBefore(element,nextSlide);
+				plugin.settings.onSlideBegin(element,nextSlide);
 				
 				switch(plugin.settings.animation)
 				{
@@ -438,7 +437,7 @@
 									plugin.slider.css({
 										left: 0
 									});
-									plugin.settings.onSlideAfter(element,nextSlide)	
+									plugin.settings.onSlideComplete(element,nextSlide)	
 								});
 								
 							} else {
@@ -462,7 +461,7 @@
 									}
 									
 									
-									plugin.settings.onSlideAfter(element,nextSlide)	
+									plugin.settings.onSlideComplete(element,nextSlide)	
 								});
 								
 							}
@@ -473,7 +472,7 @@
 							var animateSettings = (plugin.settings.vertical) ? {top: (plugin.slides.eq(nextSlide).position().top) * -1} : {left: (plugin.slides.eq(nextSlide).position().left) * -1};
 															
 							plugin.slider.animate(animateSettings,plugin.settings.speed,plugin.settings.easing,function() {
-								plugin.settings.onSlideAfter(element,nextSlide)	
+								plugin.settings.onSlideComplete(element,nextSlide)	
 							});
 							
 						}
@@ -481,8 +480,10 @@
 						break;
 					
 					default:
-						plugin.slides.eq(plugin.currentPosition).fadeOut(plugin.settings.speed);
-						plugin.slides.eq(nextSlide).fadeIn(plugin.settings.speed);
+						plugin.slides.eq(plugin.currentPosition).fadeOut(plugin.settings.speed,plugin.settings.easing);
+						plugin.slides.eq(nextSlide).fadeIn(plugin.settings.speed,plugin.settings.easing,function() {
+							plugin.settings.onSlideComplete(element,nextSlide)	
+						});
 						break;	
 				}
 				
