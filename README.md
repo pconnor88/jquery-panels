@@ -9,7 +9,7 @@ $(function() {
 });
 ```
 
-The HMTL structure should be as follows, where the divs with the class of slide is each individual panel:
+The HMTL structure should be as follows, where the divs with the class of `slide` is each individual panel:
 ```html
 <div id="feature-panel">
 	<div class="slide"></div>
