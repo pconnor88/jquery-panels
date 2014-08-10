@@ -53,3 +53,27 @@ The plugin can be configured with any of the following options on setup.
 | **`onSetupComplete`** | `function` | `function(element, index) { }` | A function that is called once the plugin has initialised. `element` is the jQuery selected plugin, `index` is the current slide number.
 | **`onSlideBegin`** | `function` | `function(element, index) { }` | A function that is called once the feature panel begins animating to the next slide. `element` is the jQuery selected plugin, `index` is the current slide number.
 | **`onSlideComplete`** | `function` | `function(element, index) { }` | A function that is called once the feature panel has finished animating to the next slide. `element` is the jQuery selected plugin, `index` is the current slide number.
+
+***Methods
+
+Any of methods below allow you to interact with the plugin from your code after is has been initialised. These functions can be called by passing the string of the function name into the plugin.
+
+```javascript
+$('#feature-panel').panels('pause');
+```
+
+If you need to pass in additional parameters, these are passed in after the function name.
+
+```javascript
+$('#feature-panel').panels('gotoSlide', 3);
+```
+
+
+| Name | Parameters | Description
+| ------------- | ------------- | ----------- |
+| **`play`** | `none` | Starts the feature panel auto playing if its current status is paused.
+| **`pause`** | `none` | Pauses the feature panel and stops it auto playing.
+| **`next`** | `none` | Moves the feature panel on to the next slide.
+| **`previous`** | `none` | Moves the feature panel on to the previous slide.
+| **`gotoSlide`** | `number` | Moves the feature panel on to the number specified in the parameters. **Note this is a 0-based number, so 0 will be the first slide not 1.**
+| **`destroy`** | `none` | Destroys the plugin and returns it to its initial state.

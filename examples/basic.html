@@ -36,6 +36,10 @@
 				$("#play").click(function() {
 					$("#ticker").panels('play');
 				});
+				
+				$("#goto").click(function() {
+					$("#ticker").panels('gotoSlide', 4);
+				});
 			});
 		</script>
     </head>
@@ -50,6 +54,7 @@
         
         <button id="pause">Pause</button>
         <button id="play">Play</button>
+        <button id="goto">Go to slide 5</button>
     
     </body>
 </html>
