@@ -12,22 +12,8 @@
         <script type="text/javascript" src="../js/jquery.panels.js"></script>
         <script type="text/javascript">
 			$(function() {
-				$("#ticker").panels({
-					animation: 'fade',
-					startSlide: 2,
-					markerPosition: 's',
-					wait: 3000,
-					speed: 2000,
-					infinite: true,
-					vertical: false,
-					easing: 'easeOutBounce',
-					onSlideBefore: function(element, index) { 
-						console.log("Slide Animate");
-					},
-					onSlideAfter: function(element, index) {
-						console.log("Slide Finish");
-					}
-				});
+				
+				create();
 				
 				$("#pause").click(function() {
 					$("#ticker").panels('pause');
@@ -40,7 +26,37 @@
 				$("#goto").click(function() {
 					$("#ticker").panels('gotoSlide', 4);
 				});
+				
+				$("#destroy").click(function() {
+					$("#ticker").panels('destroy');
+				});
+				
+				$("#create").click(function() {
+					create();
+				});
+				
 			});
+			
+			function create() {
+				
+				console.log("SETUP");
+				$("#ticker").panels({
+					animation: 'slide',
+					startSlide: 2,
+					markerPosition: 's',
+					wait: 3000,
+					speed: 2000,
+					infinite: false,
+					vertical: false,
+					easing: 'easeOutBounce',
+					onSlideBefore: function(element, index) { 
+						console.log("Slide Animate");
+					},
+					onSlideAfter: function(element, index) {
+						console.log("Slide Finish");
+					}
+				});	
+			}
 		</script>
     </head>
     <body>
@@ -55,6 +71,8 @@
         <button id="pause">Pause</button>
         <button id="play">Play</button>
         <button id="goto">Go to slide 5</button>
+        <button id="create">Create Plugin</button>
+        <button id="destroy">Destroy Plugin</button>
     
     </body>
 </html>

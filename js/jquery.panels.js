@@ -770,7 +770,42 @@
 		destroy: function() {
 			
 			var plugin = this;
-			plugin = null;
+			var element = $(plugin.element);
+									
+			element.removeAttr("style").removeClass("pnl-holder");
+			
+			plugin.markers.remove();
+			
+			plugin.slides.css({
+				position: '',
+				height: '',
+				top: '',
+				float: '',
+				left: ''
+			});
+			
+			switch(plugin.settings.animation)
+			{
+				
+				case "slide":
+				
+					if(plugin.settings.infinite) {
+						plugin.slider.parent().remove();
+						plugin.slides.unwrap();
+					} else {
+						plugin.slides.unwrap().unwrap();
+					}
+					
+					break;
+				
+				default:
+					
+					
+					
+					
+					break;	
+			}
+						
 						
 		}
 		
@@ -788,6 +823,10 @@
             } else {
                 if(typeof options === 'string') {
                     instance[options].apply(instance, args);
+					
+					if(options === 'destroy') {
+						item.data('Panels', null);	
+					}
                 }
             }
         });
