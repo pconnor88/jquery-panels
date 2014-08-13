@@ -77,7 +77,6 @@
 			plugin.panelWidth = $(plugin.slides[0]).outerWidth(true);
 			plugin.panelHeight = $(plugin.slides[0]).outerHeight(true);
 			
-			
 			// If the current position is out of range, keep looping round the count till that number is reached. 
 			// NB: Javascript negative modulus is broken, had to apply fix ((this%n)+n)%n.			
 			plugin.currentPosition = ((plugin.settings.startSlide >= plugin.slideCount) || (plugin.settings.startSlide < 0)) ? (((plugin.settings.startSlide%plugin.slideCount)+plugin.slideCount)%plugin.slideCount) : plugin.settings.startSlide;
@@ -344,316 +343,134 @@
 			
 			//Completed setup, call the complete funciton..
 			plugin.settings.onSetupComplete(element, plugin.currentPosition);
-			
-			
-			
-					/////Recalculate number of elements based on perScreen and step settings
-//		
-//		
-//		var elementsTemp = 0;
-//		for(var i=0; i<this.elements; i+= this.options.panelsToMove) {
-//			if((i + this.options.panelsPerScreen) < this.elements) {
-//				elementsTemp++;
-//			}
-//		}
-//		
-//		//if((this.elements % this.options.panelsPerScreen) != 0) {
-//			elementsTemp++;
-//		//}
-//		
-//		this.moveElements = elementsTemp;
-//		
-//		if(this.options.infinite) {
-//			this.moveElements = this.elements;	
-//		}
-//		
-
-//		
-//		this.sizeRatio = this.panelHeight/this.panelWidth;
-//		
-//		//Add event listener to resize on window resize
-//		if(this.options.responsive) {
-//			$(this.element).width("100%");
-//			this.resize();
-//			var panel = this;
-//			
-//			$(window).resize(function(e) {
-//				panel.resize();
-//            });
-//		}
-//		
 		
         },
-//
+
         move: function(direction, setNextSlide, userClick) {
 			
 			var plugin = this;
 			var element = $(this.element);
 			
-			if(plugin.timer !== null) {
-				clearTimeout(plugin.timer);	
-			}
-			
 			// Set the slide to be displayed
 			var nextSlide = plugin.currentPosition;
-						
-			//If override is set, set nextslide to that, else add on the direction
-			(setNextSlide !== false) ? (nextSlide = setNextSlide) : (nextSlide += direction)
 			
-			// make sure the next slide is in range..
-			nextSlide = ((nextSlide >= plugin.slideCount) || (nextSlide < 0)) ? (((nextSlide%plugin.slideCount)+plugin.slideCount)%plugin.slideCount) : nextSlide;
-
-			//Only animate if trying to move to a different slide
-			if(nextSlide != plugin.currentPosition) {
+			// Only move the feature panel on if it is not currently animated or a user click			
+			if((!plugin.slides.is(":animated"))  && ((!plugin.slider) || (!plugin.slider.is(":animated")))) {
+			
+			
+				if(plugin.timer !== null) {
+					clearTimeout(plugin.timer);	
+				}
 				
-				//Setup callbacks for slideBefore and slideAfter
-				plugin.settings.onSlideBegin(element,nextSlide);
-				
-				switch(plugin.settings.animation)
-				{
-					
-					case "slide":
-					
-						//Slide animation is split into two parts, infinite and regular
-					
-						if(plugin.settings.infinite) {
 							
-							//Use the direction to determine where to put the next slide
-							if(direction == 1) {
-								
-								plugin.slides.eq(nextSlide).clone().appendTo(plugin.slider);
-								plugin.slider.animate({
-									left: '-100%'
-								},plugin.settings.speed,plugin.settings.easing,function() {
-									//remove the old code and reset
-									
-									for(var s = 0; s < plugin.settings.panelsPerScreen; s++) {
+				//If override is set, set nextslide to that, else add on the direction
+				(setNextSlide !== false) ? (nextSlide = setNextSlide) : (nextSlide += direction)
+				
+				// make sure the next slide is in range..
+				nextSlide = ((nextSlide >= plugin.slideCount) || (nextSlide < 0)) ? (((nextSlide%plugin.slideCount)+plugin.slideCount)%plugin.slideCount) : nextSlide;
+	
+				//Only animate if trying to move to a different slide
+				if(nextSlide != plugin.currentPosition) {
+					
+					//Setup callbacks for slideBefore and slideAfter
+					plugin.settings.onSlideBegin(element,nextSlide);
+					
+					switch(plugin.settings.animation)
+					{
 						
-																
-										plugin.slider.children().eq(s).remove();
+						case "slide":
+						
+							//Slide animation is split into two parts, infinite and regular
+						
+							if(plugin.settings.infinite) {
+								
+								//Use the direction to determine where to put the next slide
+								if(direction == 1) {
+									
+									plugin.slides.eq(nextSlide).clone().appendTo(plugin.slider);
+									plugin.slider.animate({
+										left: '-100%'
+									},plugin.settings.speed,plugin.settings.easing,function() {
 										
-									}
+										//remove the old code and reset
+										for(var s = 0; s < plugin.settings.panelsPerScreen; s++) {
+											plugin.slider.children().eq(s).remove();
+										}
+										
+										plugin.slider.css({
+											left: 0
+										});
+										
+										SlideComplete(plugin,element,nextSlide);
+									});
+									
+								} else {
+									
+									plugin.slides.eq(nextSlide).clone().prependTo(plugin.slider);
 									
 									plugin.slider.css({
+											left: '-100%'
+										});
+									
+									plugin.slider.animate({
 										left: 0
+									},plugin.settings.speed,plugin.settings.easing,function() {
+										
+										//remove the old code and reset
+										for(var s = 0; s < plugin.settings.panelsPerScreen; s++) {
+											plugin.slider.children().eq((-1 - s)).remove();
+										}
+										
+										SlideComplete(plugin,element,nextSlide);
+										
 									});
-									plugin.settings.onSlideComplete(element,nextSlide)	
-								});
+									
+								}
 								
 							} else {
-								
-								plugin.slides.eq(nextSlide).clone().prependTo(plugin.slider);
-								
-								plugin.slider.css({
-										left: '-100%'
-									});
-								
-								plugin.slider.animate({
-									left: 0
-								},plugin.settings.speed,plugin.settings.easing,function() {
-									//remove the old code and reset
-									
-									for(var s = 0; s < plugin.settings.panelsPerScreen; s++) {
 						
-														
-										plugin.slider.children().eq((-1 - s)).remove();
-										
-									}
-									
-									
-									plugin.settings.onSlideComplete(element,nextSlide)	
+								//If vertical, set the top property else set the left one
+								var animateSettings = (plugin.settings.vertical) ? {top: (plugin.slides.eq(nextSlide).position().top) * -1} : {left: (plugin.slides.eq(nextSlide).position().left) * -1};
+																
+								plugin.slider.animate(animateSettings,plugin.settings.speed,plugin.settings.easing,function() {
+									SlideComplete(plugin,element,nextSlide);
 								});
 								
 							}
 							
-						} else {
-					
-							//If vertical, set the top property else set the left one
-							var animateSettings = (plugin.settings.vertical) ? {top: (plugin.slides.eq(nextSlide).position().top) * -1} : {left: (plugin.slides.eq(nextSlide).position().left) * -1};
-															
-							plugin.slider.animate(animateSettings,plugin.settings.speed,plugin.settings.easing,function() {
-								plugin.settings.onSlideComplete(element,nextSlide)	
-							});
-							
-						}
+							break;
 						
-						break;
+						default:
+							
+							plugin.slides.eq(plugin.currentPosition).fadeOut(plugin.settings.speed,plugin.settings.easing);
+							plugin.slides.eq(nextSlide).fadeIn(plugin.settings.speed,plugin.settings.easing,function() {
+								SlideComplete(plugin,element,nextSlide);
+							});
+							break;	
+					}
 					
-					default:
-						plugin.slides.eq(plugin.currentPosition).fadeOut(plugin.settings.speed,plugin.settings.easing);
-						plugin.slides.eq(nextSlide).fadeIn(plugin.settings.speed,plugin.settings.easing,function() {
-							plugin.settings.onSlideComplete(element,nextSlide)	
-						});
-						break;	
+				}
+				
+				
+				
+				//Set the next animation up if needed
+				//Time has to be animation time + wait time so doesn't fire too early
+				if((userClick && plugin.settings.resumeOnClick) || (plugin.settings.autoScroll)) {
+					
+					plugin.settings.autoScroll = true;
+					
+					plugin.timer = setTimeout(function() { 
+						plugin.currentPosition = plugin.move(1, false, false);
+					}, (plugin.settings.wait + plugin.settings.speed));
+					
 				}
 				
 			}
-			
-			if(plugin.settings.showMarkers) {
-				plugin.marker.removeClass("active");
-				plugin.marker.eq(nextSlide).addClass("active");					
-			}
-			
-			//Set the next animation up if needed
-			//Time has to be animation time + wait time so doesn't fire too early
-			if((userClick && plugin.settings.resumeOnClick) || (plugin.settings.autoScroll)) {
 				
-				plugin.settings.autoScroll = true;
 				
-				plugin.timer = setTimeout(function() { 
-					plugin.currentPosition = plugin.move(1, false, false);
-				}, (plugin.settings.wait + plugin.settings.speed));
-				
-			}
-			
-			
 			return nextSlide;
 			
-//			if((userClick) || ((!$(el).children(options.panel + ":eq(" + nextSlide + ")").is(":animated")) && (options.animation == "fade")) || ((!$(el).find(".scroller").is(":animated")) && (options.animation == "slide"))) {
-//			
-				
-//																							
-//				if(options.autoScroll || userClick) {
-//					
-//					nextSlide += (direction * this.options.panelsToMove);
-//					var panelsToMoveThisTime = this.options.panelsToMove;
-//									
-//					
-//										
-//					
-//					
-//										
-//					
-//					
-//																	
-//						//Switch through the animation types and do the necessary animation
-//						
-//							case "slide":
-//								
-//								
-//								//If Infinite scroll, handle the move function completely differently..
-//								if(options.infinite) {
-//							
-//									if(direction == 1) {
-//																				
-//										//Add the number of nodes we are moving after the current slide
-//										
-//										for(var s = 0; s < panelsToMoveThisTime; s++) {
-//											
-//											var sc = this.currentPosition + this.options.panelsPerScreen + s;
-//																															
-//											if(sc >= this.elements) {
-//												sc = sc % this.elements;	
-//											}
-//																					
-//											$(this.element).find(".scroller").children(this.options.panel + ":not(.infinite)").eq(sc).clone().removeClass("hidden").show().appendTo($(this.element).find(".infinite"));
-//											
-//										}
-//																				
-//										//$(el).find(options.panel + ".hidden:eq(" + nextSlide + ")").clone().insertAfter($(el).find(options.panel + ".infinite")).removeClass("hidden").show();	
-//										
-//										if(options.vertical) {
-//											$(el).find(".scroller").animate({
-//												top: (this.panelHeight  * panelsToMoveThisTime) * -1
-//											}, function() {
-//												$(el).find(options.panel + ".infinite").children(options.panel + ":lt(" + panelsToMoveThisTime + ")").remove();
-//												$(this).css({top:0});
-//											});
-//										} else {
-//											$(el).find(".scroller").animate({
-//												left: (this.panelWidth * panelsToMoveThisTime) * -1
-//											},function() {
-//												$(el).find(options.panel + ".infinite").children(options.panel + ":lt(" + panelsToMoveThisTime + ")").remove();
-//												$(this).css({left:0});
-//											});
-//										}
-//																
-//									} else {
-//										
-//										//Add a node before the current slide
-//										
-//										//Add the number of nodes we are moving after the current slide
-//										
-//										var sc = this.currentPosition
-//										
-//										for(var s = 0; s < panelsToMoveThisTime; s++) {
-//											
-//											sc--;
-//																				
-//											if(sc < 0) {
-//												sc = this.elements-1;	
-//											}
-//																					
-//											$(this.element).find(".scroller").children(this.options.panel + ":not(.infinite)").eq(sc).clone().removeClass("hidden").show().prependTo($(this.element).find(".infinite"));
-//											
-//										}
-//										
-//																				
-//										//$(el).find(options.panel + ".hidden:eq(" + nextSlide + ")").clone().insertBefore($(el).find(options.panel + ".infinite")).removeClass("hidden").show();	
-//										
-//										if(options.vertical) {
-//											
-//											$(el).find(".scroller").css({top:(this.panelHeight  * panelsToMoveThisTime) * -1}).animate({
-//												top: 0
-//											}, function() {
-//												var sl = $(el).find(options.panel + ".infinite").children().size();
-//												$(el).find(options.panel + ".infinite").children(options.panel + ":gt(" + (sl-panelsToMoveThisTime -1)  + ")").remove();
-//											});
-//											
-//										} else {
-//											
-//											$(el).find(".scroller").css({left:(this.panelWidth  * panelsToMoveThisTime) * -1}).animate({
-//												left: 0
-//											}, function() {
-//												var sl = $(el).find(options.panel + ".infinite").children().size();
-//												$(el).find(options.panel + ".infinite").children(options.panel + ":gt(" + (sl-panelsToMoveThisTime -1)  + ")").remove();
-//											});
-//											
-//											
-//											
-//										}
-//										
-//									}
-//																						
-//								} else {
-//								
-//									//Normal Scroll..
-//									var scrollToSlide = nextSlide;
-//									if(((scrollToSlide * this.options.panelsToMove) + this.options.panelsPerScreen) >= (this.elements)) {
-//																				
-//										if(options.vertical) {
-//											$(el).find(".scroller").animate({
-//												top: ((this.elements - this.options.panelsPerScreen) * this.panelHeight) * -1
-//											});
-//										} else {
-//											$(el).find(".scroller").animate({
-//												left: ((this.elements - this.options.panelsPerScreen) * this.panelWidth) * -1
-//											});
-//										}
-//										 
-//									} else {
-//										if(options.vertical) {
-//											$(el).find(".scroller").animate({
-//												top: (scrollToSlide * (this.panelHeight * this.options.panelsToMove)) * -1
-//											});
-//										} else {
-//											$(el).find(".scroller").animate({
-//												left: (scrollToSlide * (this.panelWidth * this.options.panelsToMove)) * -1
-//											});
-//										}
-//									}
-//									
-//								}
-//								
-//								
-//								break;
-//							
-//							default:
-//								
-//								// Fade by default
-//								
-//							
-//						}
+
 //						
 //						
 //						//UPDATE THE CURRENT POSITION TO BE THE NEW POSITION
@@ -684,36 +501,8 @@
 //							$(el).children(".pnl-markers").children("li").removeClass("active");
 //							$(el).children(".pnl-markers").children("li:eq(" + nextSlide + ")").addClass("active");					
 //						}
-//												
 //					}
-//					
-//					//Setup timers again if permission to do so
-//					if(userClick && options.resumeOnClick) {
-//						
-//						this.options.autoScroll = true;
-//						var plugin = this;
-//						
-//						this.timerval = setInterval(function() { 
-//							plugin.currentPosition = plugin.movePanel(el, options, 1, false, -1);
-//						}, options.wait);
-//					}
-//					
 //				}
-//				
-//				
-//				if(options.infinite) 
-//				{
-//					if(direction == 1) {
-//						options.onSlideChange(this, $(el).find(options.panel + ".infinite").children(options.panel + ":eq(" + options.panelsToMove + ")"));	
-//					} else {
-//						options.onSlideChange(this, $(el).find(options.panel + ".infinite").children(options.panel + ":eq(0)"));	
-//					}
-//				} 
-//				else 
-//				{
-//					options.onSlideChange(this, $(el).find(options.panel + ":eq(" + this.currentPosition + ")"));
-//				}
-//				
 //			}
 //			
 //
@@ -771,19 +560,37 @@
 			
 			var plugin = this;
 			var element = $(plugin.element);
-									
+			
+			//Remove any styles the plugin has added						
 			element.removeAttr("style").removeClass("pnl-holder");
 			
+			//Stop all possible animation
+			plugin.slides.stop(true,true);
+			
+			if((plugin.slider) && (!plugin.slider.is(":animated"))) {
+				plugin.slider.stop(true,true);	
+			}
+
+			//Remove arrows and markers
 			plugin.markers.remove();
 			
+			//Remove inline styles
 			plugin.slides.css({
 				position: '',
 				height: '',
 				top: '',
 				float: '',
-				left: ''
+				left: '',
+				display: ''
 			});
 			
+			//Remove timers
+			if(plugin.timer != null) {
+				clearTimeout(plugin.timer);
+			}
+			
+			
+			//Remove animation specific html
 			switch(plugin.settings.animation)
 			{
 				
@@ -811,6 +618,17 @@
 		
 		
     };
+	
+	function SlideComplete(p,e,ns) {
+		
+		if(p.settings.showMarkers) {
+			p.marker.removeClass("active");
+			p.marker.eq(ns).addClass("active");					
+		}
+		
+		p.settings.onSlideComplete(e,ns);
+		
+	}
 			
 
     //Plugin wrapper

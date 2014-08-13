@@ -41,7 +41,7 @@
 				
 				console.log("SETUP");
 				$("#ticker").panels({
-					animation: 'slide',
+					animation: 'fade',
 					startSlide: 2,
 					markerPosition: 's',
 					wait: 3000,
@@ -49,10 +49,10 @@
 					infinite: false,
 					vertical: false,
 					easing: 'easeOutBounce',
-					onSlideBefore: function(element, index) { 
+					onSlideBegin: function(element, index) { 
 						console.log("Slide Animate");
 					},
-					onSlideAfter: function(element, index) {
+					onSlideComplete: function(element, index) {
 						console.log("Slide Finish");
 					}
 				});	
